@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Study Group Finder | Uganda Christian University (UCU)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- React & Babel for immediate in-browser execution -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="src/styles/index.css">
+  <style>
+    /* Inline helper styling */
+    .nav-btn {
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      color: #ffffff;
+      background-color: rgba(224, 159, 62, 0.2);
+      border-left: 3px solid #e09f3e;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const API_BASE = 'http://localhost:5000/api';
+
+    // Mock initial state for zero-downtime offline defense
+    const INITIAL_USER = {
+      id: 2,
+      full_name: 'Brian Kigozi',
+      reg_number: 'S22/B23/BSIT/014',
+      email: 'kigozi.brian@ucu.ac.ug',
+      role: 'STUDENT',
+      programme: 'Bachelor of Science in Information Technology',
+      faculty: 'Faculty of Science & Technology',
+      year_of_study: 'Year 3'
+    };
+
+    function App() {
+      const [currentUser, setCurrentUser] = useState(() => {
+        const saved = localStorage.getItem('demo_user');
+        return saved ? JSON.parse(saved) : INITIAL_USER;
+      });
+      const [currentView, setCurrentView] = useState('dashboard'); // 'landing', 'dashboard', 'explore', 'create-group', 'group-details', 'sessions', 'profile', 'admin', 'login', 'register'
+      const [selectedGroupId, setSelectedGroupId] = useState(1);
+      const [groups, setGroups] = useState([]);
+      const [sessions, setSessions] = useState([]);
+      const [posts, setPosts] = useState([]);
+      const [toast, setToast] = useState(null);
+      const [loading, setLoading] = useState(false);
+
+      const showToast = (msg, type = 'success') => {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 3500);
+      };
+
+      // Load data from Backend or Local fallback
+      const fetchData = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/groups`);
+          const data = await res.json();
+          if (data.groups) {
+            setGroups(data.groups);
+          }
+        } catch (e) {
+          // Offline fallback
+          if (groups.length === 0) {
+            setGroups([
+              {
+                id: 1,
+                name: 'Web & Mobile Dev Masterminds',
+                course_name: 'Web and Mobile Application Development',
+                course_code: 'BIT3104',
+                faculty: 'Faculty of Science & Technology',
+                description: 'Collaborative revision, code reviews and project sprint workshops for React, Node.js, and API design.',
+                meeting_location: 'Tech Lab 2 / Google Meet',
+                meeting_type: 'Hybrid',
+                leader_id: 2,
+                leader_name: 'Brian Kigozi',
+                member_count: 5,
+                max_members: 12,
+                is_member: true
+              },
+              {
+                id: 2,
+                name: 'Data Structures & Algorithms Circle',
+                course_name: 'Data Structures and Algorithms',
+                course_code: 'CSC2101',
+                faculty: 'Faculty of Science & Technology',
+                description: 'Weekly problem-solving sessions tackling recursion, binary trees, dynamic programming, and complexity in C++ and Java.',
+                meeting_location: 'Hamu Mukasa Library Discussion Room 3',
+                meeting_type: 'Physical',
+                leader_id: 3,
+                leader_name: 'Sarah Nakato',
+                member_count: 4,
+                max_members: 10,
+                is_member: false
+              },
+              {
+                id: 3,
+                name: 'Constitutional Law Forum',
+                course_name: 'Constitutional Law of Uganda',
+                course_code: 'LAW1201',
+                faculty: 'Faculty of Law',
+                description: 'In-depth analysis of landmark cases, judicial precedent, and preparation for mid-semester moot presentations.',
+                meeting_location: 'Law Quad Gazebo / Zoom',
+                meeting_type: 'Hybrid',
+                leader_id: 4,
+                leader_name: 'David Musiime',
+                member_count: 6,
+                max_members: 15,
+                is_member: false
+              }
+            ]);
+          }
+        }
+      };
+
+      useEffect(() => {
+        fetchData();
+      }, []);
+
+      const handleLogin = (user) => {
+        setCurrentUser(user);
+        localStorage.setItem('demo_user', JSON.stringify(user));
+        showToast(`Welcome back, ${user.full_name}!`);
+        if (user.role === 'ADMIN') {
+          setCurrentView('admin');
+        } else {
+          setCurrentView('dashboard');
+        }
+      };
+
+      const handleLogout = () => {
+        setCurrentUser(null);
+        localStorage.removeItem('demo_user');
+        showToast('Logged out successfully.', 'info');
+        setCurrentView('landing');
+      };
+
+      const handleJoinGroup = (groupId) => {
+        setGroups(prev => prev.map(g => g.id === groupId ? { ...g, is_member: true, member_count: (g.member_count || 1) + 1 } : g));
+        showToast('Successfully joined the study group!');
+      };
+
+      const handleLeaveGroup = (groupId) => {
+        setGroups(prev => prev.map(g => g.id === groupId ? { ...g, is_member: false, member_count: Math.max(1, (g.member_count || 2) - 1) } : g));
+        showToast('You have left the study group.', 'info');
+      };
+
+      const handleCreateGroup = (newGroup) => {
+        const id = groups.length + 1;
+        const created = {
+          id,
+          ...newGroup,
+          leader_id: currentUser.id,
+          leader_name: currentUser.full_name,
+          member_count: 1,
+          is_member: true
+        };
+        setGroups([created, ...groups]);
+        setSelectedGroupId(id);
+        showToast('Study group created! You are designated as Group Leader.');
+        setCurrentView('group-details');
+      };
+
+      // Header component
+      const Header = () => (
+        <header className="top-navbar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: '#0b3b60', color: '#e09f3e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+              🎓
+            </div>
+            <div>
+              <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0b3b60', display: 'block', lineHeight: 1.2 }}>
+                UCU Study Group Finder
+              </span>
+              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Uganda Christian University</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {currentUser ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span className="badge badge-gold">{currentUser.role}</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>{currentUser.full_name}</span>
+                <button onClick={handleLogout} className="btn btn-outline btn-sm" style={{ color: '#ef4444' }}>
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setCurrentView('login')} className="btn btn-outline btn-sm">Log In</button>
+                <button onClick={() => setCurrentView('register')} className="btn btn-primary btn-sm">Register</button>
+              </div>
+            )}
+          </div>
+        </header>
+      );
+
+      // Sidebar component
+      const Sidebar = () => (
+        <aside className="sidebar">
+          <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: '#e09f3e', color: '#07263f', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}>
+              🏛️
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.95rem' }}>UCU Study Hub</div>
+              <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Main Campus Mukono</div>
+            </div>
+          </div>
+          <nav style={{ padding: '20px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', padding: '0 12px 6px' }}>PORTAL NAVIGATION</div>
+            <button className={`nav-btn ${currentView === 'dashboard' ? 'active' : ''}`} onClick={() => setCurrentView('dashboard')}>
+              📊 Student Dashboard
+            </button>
+            <button className={`nav-btn ${currentView === 'explore' ? 'active' : ''}`} onClick={() => setCurrentView('explore')}>
+              🔍 Explore Groups
+            </button>
+            <button className={`nav-btn ${currentView === 'create-group' ? 'active' : ''}`} onClick={() => setCurrentView('create-group')}>
+              ➕ Create Study Group
+            </button>
+            <button className={`nav-btn ${currentView === 'sessions' ? 'active' : ''}`} onClick={() => setCurrentView('sessions')}>
+              📅 Study Sessions
+            </button>
+            <button className={`nav-btn ${currentView === 'profile' ? 'active' : ''}`} onClick={() => setCurrentView('profile')}>
+              👤 My Profile
+            </button>
+            {currentUser?.role === 'ADMIN' && (
+              <button className={`nav-btn ${currentView === 'admin' ? 'active' : ''}`} onClick={() => setCurrentView('admin')} style={{ color: '#f6d89b' }}>
+                🛡️ Admin Dashboard
+              </button>
+            )}
+          </nav>
+          <div style={{ padding: 16, backgroundColor: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ color: '#ffffff', fontWeight: 600, fontSize: '0.85rem' }}>{currentUser?.full_name}</div>
+            <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{currentUser?.reg_number}</div>
+          </div>
+        </aside>
+      );
+
+      // Toast Notification Banner
+      const ToastBanner = () => toast && (
+        <div style={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          zIndex: 9999,
+          backgroundColor: toast.type === 'success' ? '#10b981' : toast.type === 'danger' ? '#ef4444' : '#0b3b60',
+          color: '#ffffff',
+          padding: '12px 20px',
+          borderRadius: 8,
+          boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
+          fontWeight: 600,
+          fontSize: '0.9rem'
+        }}>
+          {toast.msg}
+        </div>
+      );
+
+      // VIEWS
+      if (currentView === 'landing' || !currentUser) {
+        return (
+          <div>
+            <Header />
+            <section style={{ backgroundColor: '#07263f', color: '#ffffff', padding: '70px 24px', textAlign: 'center' }}>
+              <div style={{ maxWidth: 840, margin: '0 auto' }}>
+                <span className="badge badge-gold" style={{ marginBottom: 16, fontSize: '0.85rem' }}>UGANDA CHRISTIAN UNIVERSITY</span>
+                <h1 style={{ fontSize: '2.6rem', fontWeight: 800, lineHeight: 1.2, marginBottom: 18 }}>
+                  Student Study Group Finder
+                </h1>
+                <p style={{ fontSize: '1.1rem', color: '#cbd5e1', lineHeight: 1.6, marginBottom: 30 }}>
+                  Discover course study circles, coordinate revision sessions at Hamu Mukasa Library or online, share academic resources, and prepare for exams together.
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 14 }}>
+                  <button onClick={() => setCurrentView('login')} className="btn btn-accent btn-lg">
+                    Sign In to Portal
+                  </button>
+                  <button onClick={() => setCurrentView('register')} className="btn btn-outline btn-lg" style={{ color: '#ffffff', borderColor: '#ffffff' }}>
+                    Register Student Account
+                  </button>
+                </div>
+              </div>
+            </section>
+            <main style={{ maxWidth: 1200, margin: '50px auto', padding: '0 24px' }}>
+              <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0b3b60', marginBottom: 20 }}>Featured Study Circles</h2>
+              <div className="grid-3">
+                {groups.slice(0, 3).map(g => (
+                  <div key={g.id} className="card" style={{ borderTop: '4px solid #0b3b60' }}>
+                    <span className="badge badge-primary">{g.course_code}</span>
+                    <h3 style={{ fontSize: '1.15rem', color: '#0b3b60', marginTop: 10 }}>{g.name}</h3>
+                    <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '8px 0' }}>{g.faculty}</p>
+                    <p style={{ fontSize: '0.85rem', color: '#334155', lineHeight: 1.4 }}>{g.description}</p>
+                    <div style={{ borderTop: '1px solid #e2e8f0', marginTop: 14, paddingTop: 10, fontSize: '0.8rem', color: '#64748b' }}>
+                      Leader: <strong>{g.leader_name}</strong> • Format: <strong>{g.meeting_type}</strong>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </main>
+            <ToastBanner />
+          </div>
+        );
+      }
+
+      return (
+        <div className="app-container">
+          <Sidebar />
+          <div className="main-content">
+            <Header />
+            <main className="content-body">
+              {/* 1. DASHBOARD VIEW */}
+              {currentView === 'dashboard' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  <div style={{ background: 'linear-gradient(135deg, #0b3b60 0%, #07263f 100%)', color: '#ffffff', padding: '24px 28px', borderRadius: 12 }}>
+                    <span style={{ color: '#e09f3e', fontSize: '0.8rem', fontWeight: 600 }}>UCU ACADEMIC PORTAL</span>
+                    <h1 style={{ fontSize: '1.6rem', fontWeight: 800, marginTop: 4 }}>Welcome, {currentUser.full_name}!</h1>
+                    <p style={{ color: '#cbd5e1', fontSize: '0.875rem' }}>{currentUser.programme} • {currentUser.year_of_study}</p>
+                  </div>
+                  <div className="grid-3">
+                    <div className="card">
+                      <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>JOINED GROUPS</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0b3b60' }}>{groups.filter(g => g.is_member).length}</div>
+                    </div>
+                    <div className="card">
+                      <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>AVAILABLE DIRECTORY</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#e09f3e' }}>{groups.length}</div>
+                    </div>
+                    <div className="card">
+                      <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>LEADER PRIVILEGES</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0284c7' }}>{groups.filter(g => g.leader_id === currentUser.id).length}</div>
+                    </div>
+                  </div>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0b3b60' }}>My Study Groups</h2>
+                  <div className="grid-2">
+                    {groups.filter(g => g.is_member).map(g => (
+                      <div key={g.id} className="card" style={{ borderTop: '4px solid #0b3b60' }}>
+                        <span className="badge badge-primary">{g.course_code}</span>
+                        <h3 style={{ fontSize: '1.1rem', color: '#0b3b60', margin: '8px 0 4px' }}>{g.name}</h3>
+                        <p style={{ fontSize: '0.85rem', color: '#475569' }}>{g.course_name}</p>
+                        <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+                          <button onClick={() => { setSelectedGroupId(g.id); setCurrentView('group-details'); }} className="btn btn-outline btn-sm">
+                            Open Workspace
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 2. EXPLORE VIEW */}
+              {currentView === 'explore' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0b3b60' }}>Explore UCU Study Groups</h1>
+                  <div className="grid-3">
+                    {groups.map(g => (
+                      <div key={g.id} className="card" style={{ borderTop: '4px solid #0b3b60', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <span className="badge badge-primary">{g.course_code}</span>
+                            <span className="badge badge-gold">{g.meeting_type}</span>
+                          </div>
+                          <h3 style={{ fontSize: '1.05rem', color: '#0b3b60', marginBottom: 4 }}>{g.name}</h3>
+                          <p style={{ fontSize: '0.85rem', color: '#475569', marginBottom: 8 }}>{g.course_name}</p>
+                          <p style={{ fontSize: '0.8rem', color: '#64748b' }}>{g.description}</p>
+                        </div>
+                        <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #f1f5f9' }}>
+                          <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: 10 }}>
+                            Leader: <strong>{g.leader_name}</strong> • Members: <strong>{g.member_count}</strong>
+                          </div>
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button onClick={() => { setSelectedGroupId(g.id); setCurrentView('group-details'); }} className="btn btn-outline btn-sm" style={{ flex: 1 }}>
+                              Details
+                            </button>
+                            {g.is_member ? (
+                              <button onClick={() => handleLeaveGroup(g.id)} className="btn btn-outline btn-sm" style={{ color: '#ef4444' }}>
+                                Leave
+                              </button>
+                            ) : (
+                              <button onClick={() => handleJoinGroup(g.id)} className="btn btn-primary btn-sm" style={{ flex: 1 }}>
+                                Join Group
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 3. CREATE GROUP VIEW */}
+              {currentView === 'create-group' && (
+                <div className="card" style={{ maxWidth: 640, margin: '0 auto', padding: 28 }}>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0b3b60', marginBottom: 6 }}>Create a Study Group</h2>
+                  <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: 20 }}>
+                    As the creator, you will automatically become the designated <strong>Group Leader</strong>.
+                  </p>
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const form = e.target;
+                    handleCreateGroup({
+                      name: form.name.value,
+                      course_code: form.course_code.value,
+                      course_name: form.course_name.value,
+                      faculty: form.faculty.value,
+                      description: form.description.value,
+                      meeting_location: form.meeting_location.value,
+                      meeting_type: form.meeting_type.value,
+                      max_members: 15
+                    });
+                  }}>
+                    <div className="form-group">
+                      <label className="form-label">Study Group Name *</label>
+                      <input name="name" placeholder="e.g. Mobile Computing Revision Sprint" className="form-control" required />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
+                      <div className="form-group">
+                        <label className="form-label">Course Code *</label>
+                        <input name="course_code" placeholder="BIT3104" className="form-control" required />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Course Name *</label>
+                        <input name="course_name" placeholder="Web and Mobile App Dev" className="form-control" required />
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Faculty *</label>
+                      <select name="faculty" className="form-control">
+                        <option>Faculty of Science & Technology</option>
+                        <option>Faculty of Law</option>
+                        <option>School of Business</option>
+                        <option>Faculty of Social Sciences</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Description *</label>
+                      <textarea name="description" rows={3} placeholder="Study objectives, exam goals..." className="form-control" required />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div className="form-group">
+                        <label className="form-label">Meeting Format *</label>
+                        <select name="meeting_type" className="form-control">
+                          <option>Physical</option>
+                          <option>Online</option>
+                          <option>Hybrid</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Meeting Location *</label>
+                        <input name="meeting_location" placeholder="Tech Lab 2 or Meet Link" className="form-control" required />
+                      </div>
+                    </div>
+                    <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: 12 }}>
+                      Publish Study Group
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* 4. GROUP DETAILS VIEW */}
+              {currentView === 'group-details' && (() => {
+                const grp = groups.find(g => g.id === selectedGroupId) || groups[0];
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div className="card" style={{ borderTop: '5px solid #0b3b60', padding: 24 }}>
+                      <span className="badge badge-primary">{grp?.course_code}</span>
+                      <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0b3b60', margin: '8px 0 4px' }}>{grp?.name}</h1>
+                      <p style={{ color: '#475569', fontSize: '0.9rem' }}>{grp?.course_name}</p>
+                      <p style={{ color: '#334155', fontSize: '0.875rem', marginTop: 10 }}>{grp?.description}</p>
+                      <div style={{ display: 'flex', gap: 16, borderTop: '1px solid #f1f5f9', paddingTop: 14, marginTop: 14, fontSize: '0.8rem', color: '#64748b' }}>
+                        <span>Leader: <strong>{grp?.leader_name}</strong></span>
+                        <span>Location: <strong>{grp?.meeting_location}</strong></span>
+                        <span>Format: <strong>{grp?.meeting_type}</strong></span>
+                      </div>
+                    </div>
+
+                    <div className="card" style={{ padding: 20 }}>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0b3b60', marginBottom: 12 }}>Group Discussion Forum</h3>
+                      <div style={{ backgroundColor: '#f8fafc', padding: 14, borderRadius: 8, marginBottom: 14 }}>
+                        <div style={{ fontWeight: 700, color: '#0b3b60', fontSize: '0.85rem' }}>Welcome to {grp?.name}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#334155', marginTop: 4 }}>
+                          Post notes, ask exam preparation questions, and coordinate your revision here.
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <input type="text" placeholder="Post a comment or question to the study group..." className="form-control" style={{ fontSize: '0.85rem' }} />
+                        <button onClick={() => showToast('Comment published to study circle!')} className="btn btn-primary btn-sm">
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 5. SESSIONS VIEW */}
+              {currentView === 'sessions' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0b3b60' }}>Scheduled Study Sessions</h1>
+                  <div className="grid-2">
+                    <div className="card">
+                      <span className="badge badge-primary">BIT3104</span>
+                      <h3 style={{ fontSize: '1.1rem', color: '#0b3b60', margin: '8px 0 4px' }}>React Router & API Integration Sprint</h3>
+                      <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Tech Lab 2 (Main Campus) • Nov 20 at 14:00 - 16:30</p>
+                    </div>
+                    <div className="card">
+                      <span className="badge badge-primary">CSC2101</span>
+                      <h3 style={{ fontSize: '1.1rem', color: '#0b3b60', margin: '8px 0 4px' }}>Binary Search Trees & Heap Properties</h3>
+                      <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Hamu Mukasa Library Room 3 • Nov 22 at 16:00 - 18:00</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 6. PROFILE VIEW */}
+              {currentView === 'profile' && (
+                <div className="card" style={{ maxWidth: 600, margin: '0 auto', padding: 28 }}>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0b3b60', marginBottom: 14 }}>Student Profile</h2>
+                  <div className="form-group">
+                    <label className="form-label">Full Name</label>
+                    <input className="form-control" value={currentUser?.full_name} readOnly />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Registration Number</label>
+                    <input className="form-control" value={currentUser?.reg_number} readOnly />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Email</label>
+                    <input className="form-control" value={currentUser?.email} readOnly />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Faculty</label>
+                    <input className="form-control" value={currentUser?.faculty} readOnly />
+                  </div>
+                </div>
+              )}
+
+              {/* 7. ADMIN VIEW */}
+              {currentView === 'admin' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <div style={{ backgroundColor: '#07263f', color: '#ffffff', padding: '20px 24px', borderRadius: 10 }}>
+                    <span style={{ color: '#e09f3e', fontSize: '0.75rem', fontWeight: 700 }}>ADMINISTRATOR CONTROL PANEL</span>
+                    <h1 style={{ fontSize: '1.6rem', fontWeight: 800 }}>Platform Oversight & Analytics</h1>
+                  </div>
+                  <div className="grid-3">
+                    <div className="card">
+                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>REGISTERED STUDENTS</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0b3b60' }}>6</div>
+                    </div>
+                    <div className="card">
+                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>ACTIVE STUDY GROUPS</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0284c7' }}>{groups.length}</div>
+                    </div>
+                    <div className="card">
+                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>SCHEDULED SESSIONS</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981' }}>5</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </main>
+          </div>
+          <ToastBanner />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
