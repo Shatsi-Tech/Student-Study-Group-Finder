@@ -6,17 +6,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  contents: write
 
 jobs:
-  build:
-    name: Build React Frontend
+  build-and-deploy:
+    name: Build and Deploy React Frontend
     runs-on: ubuntu-latest
 
     steps:
@@ -36,28 +30,15 @@ jobs:
         working-directory: frontend
         env:
           NODE_ENV: production
-          # Update this URL after deploying your backend to Render.com
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'https://student-study-group-finder-api.onrender.com/api' }}
+          VITE_API_BASE_URL: https://student-study-group-finder-api.onrender.com/api
         run: npm run build
 
-      - name: Add .nojekyll (allow _assets folder)
+      - name: Add .nojekyll
         run: touch frontend/dist/.nojekyll
 
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          path: frontend/dist
-
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: build
-    runs-on: ubuntu-latest
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          folder: frontend/dist
+          branch: gh-pages
+          clean: true
