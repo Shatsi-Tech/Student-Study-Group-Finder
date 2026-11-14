@@ -22,8 +22,11 @@ import AdminDashboard from './pages/AdminDashboard';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
+  // On GitHub Pages the app is served under /Student-Study-Group-Finder/
+  const basename = import.meta.env.PROD ? '/Student-Study-Group-Finder' : '/';
+
   return (
-    <Router>
+    <Router basename={basename}>
       <AuthProvider>
         <NotificationProvider>
           <Routes>
