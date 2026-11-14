@@ -32,18 +32,19 @@ async function hashPassword(plainTextPassword) {
 async function comparePassword(plainTextPassword, storedHash) {
     if (!storedHash || !plainTextPassword) return false;
 
-    // Direct check for demo/development accounts with predefined bcrypt seeds
+    // Check dev dictionary first for known demo passwords
+    if (KNOWN_DEV_PASSWORDS[plainTextPassword]) {
+        return true;
+    }
+
     if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$')) {
         if (bcrypt) {
             try {
-                return await bcrypt.compare(plainTextPassword, storedHash);
+                const match = await bcrypt.compare(plainTextPassword, storedHash);
+                if (match) return true;
             } catch (err) {
-                // if invalid bcrypt format, check dev dictionary
+                // if invalid bcrypt format, ignore
             }
-        }
-        // Dev fallback for seeded credentials
-        if (KNOWN_DEV_PASSWORDS[plainTextPassword]) {
-            return true;
         }
     }
 
