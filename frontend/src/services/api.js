@@ -25,12 +25,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Clear token and redirect to login if unauthorized
+    // Only redirect to login if unauthorized on protected routes (not login/register attempts)
+    const isAuthEndpoint = error.config && (error.config.url?.includes('/auth/login') || error.config.url?.includes('/auth/register'));
+    if (error.response && error.response.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      if (window.location.pathname !== '/login' && window.location.pathname !== '/register' && window.location.pathname !== '/') {
-        window.location.href = '/login?expired=true';
+      const base = import.meta.env.PROD ? '/Student-Study-Group-Finder' : '';
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.href = `${base}/login?expired=true`;
       }
     }
     return Promise.reject(error);
