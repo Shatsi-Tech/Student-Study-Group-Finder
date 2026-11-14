@@ -695,8 +695,10 @@ function executeStoreQuery(sql, params = []) {
         const table = tableMatch ? tableMatch[1].toLowerCase() : null;
 
         if (table && store[table]) {
-            const newId = autoIncrements[table]++;
-            const newRecord = { id: newId, created_at: new Date().toISOString() };
+            const newId = autoIncrements[table];
+            autoIncrements[table]++;
+            const now = new Date().toISOString();
+            const newRecord = { id: newId, created_at: now, updated_at: now };
 
             // Map columns from INSERT INTO table (col1, col2) VALUES (?, ?)
             const colsMatch = sql.match(/\(([^)]+)\)\s*VALUES/i);
