@@ -72,11 +72,22 @@ async function register(req, res, next) {
 
         const hashedPassword = await hashPassword(password);
 
+        // Cast all fields to string safely before trimming
+        const safeTrim = (val) => String(val || '').trim();
+
         // Security: Default public registration is always STUDENT
         const [result] = await db.query(
             `INSERT INTO users (full_name, reg_number, email, password_hash, role, programme, faculty, year_of_study, is_active)
              VALUES (?, ?, ?, ?, 'STUDENT', ?, ?, ?, 1)`,
-            [full_name.trim(), reg_number.trim(), email.toLowerCase().trim(), hashedPassword, programme.trim(), faculty.trim(), year_of_study.trim()]
+            [
+                safeTrim(full_name),
+                safeTrim(reg_number),
+                email.toLowerCase().trim(),
+                hashedPassword,
+                safeTrim(programme),
+                safeTrim(faculty),
+                safeTrim(year_of_study)
+            ]
         );
 
         const newUserId = result.insertId;
@@ -96,13 +107,13 @@ async function register(req, res, next) {
             token,
             user: {
                 id: newUserId,
-                full_name: full_name.trim(),
-                reg_number: reg_number.trim(),
+                full_name: safeTrim(full_name),
+                reg_number: safeTrim(reg_number),
                 email: email.toLowerCase().trim(),
                 role: 'STUDENT',
-                programme: programme.trim(),
-                faculty: faculty.trim(),
-                year_of_study: year_of_study.trim(),
+                programme: safeTrim(programme),
+                faculty: safeTrim(faculty),
+                year_of_study: safeTrim(year_of_study),
                 bio: null,
                 avatar_url: null
             }
