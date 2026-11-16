@@ -24,5 +24,10 @@ export const adminService = {
   async getAllGroups() {
     const response = await api.get('/admin/groups');
     return response.data;
+  },
+
+  async resetDatabase() {
+    const response = await api.post('/admin/reset-database');
+    return response.data;
   }
 };
