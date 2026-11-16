@@ -110,22 +110,52 @@ async function getGroupSessions(req, res, next) {
 async function getUserUpcomingSessions(req, res, next) {
     try {
         const userId = req.user.id;
+        const isAdmin = req.user.role === 'ADMIN';
+        const showAll = req.query.all === 'true' || isAdmin;
 
-        const [sessions] = await db.query(
-            `SELECT s.*, g.name as group_name, g.course_code, g.faculty, u.full_name as leader_name
-             FROM study_sessions s
-             JOIN study_groups g ON s.group_id = g.id
-             JOIN group_members gm ON gm.group_id = g.id
-             JOIN users u ON s.created_by = u.id
-             WHERE gm.user_id = ? AND gm.status = 'APPROVED' AND s.status = 'UPCOMING'
-             ORDER BY s.study_date ASC, s.start_time ASC
-             LIMIT 10`,
-            [userId]
-        );
+        let sessions;
+        if (showAll) {
+            const [rows] = await db.query(
+                `SELECT s.*, g.name as group_name, g.course_code, g.faculty, u.full_name as leader_name
+                 FROM study_sessions s
+                 LEFT JOIN study_groups g ON s.group_id = g.id
+                 LEFT JOIN users u ON s.created_by = u.id
+                 WHERE s.status = 'UPCOMING'
+                 ORDER BY s.study_date ASC, s.start_time ASC
+                 LIMIT 25`
+            );
+            sessions = rows;
+        } else {
+            const [rows] = await db.query(
+                `SELECT s.*, g.name as group_name, g.course_code, g.faculty, u.full_name as leader_name
+                 FROM study_sessions s
+                 JOIN study_groups g ON s.group_id = g.id
+                 JOIN group_members gm ON gm.group_id = g.id
+                 JOIN users u ON s.created_by = u.id
+                 WHERE gm.user_id = ? AND gm.status = 'APPROVED' AND s.status = 'UPCOMING'
+                 ORDER BY s.study_date ASC, s.start_time ASC
+                 LIMIT 20`,
+                [userId]
+            );
+            sessions = rows;
+            // Fallback: If user has no personal sessions yet, show all upcoming platform sessions
+            if (!sessions || sessions.length === 0) {
+                const [allRows] = await db.query(
+                    `SELECT s.*, g.name as group_name, g.course_code, g.faculty, u.full_name as leader_name
+                     FROM study_sessions s
+                     LEFT JOIN study_groups g ON s.group_id = g.id
+                     LEFT JOIN users u ON s.created_by = u.id
+                     WHERE s.status = 'UPCOMING'
+                     ORDER BY s.study_date ASC, s.start_time ASC
+                     LIMIT 20`
+                );
+                sessions = allRows;
+            }
+        }
 
         return res.status(200).json({
             success: true,
-            sessions
+            sessions: sessions || []
         });
     } catch (err) {
         next(err);
