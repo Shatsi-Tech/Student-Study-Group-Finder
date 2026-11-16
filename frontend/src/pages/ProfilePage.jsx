@@ -54,7 +54,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile Overview Card */}
-      <div className="card" style={{ padding: 28, display: 'flex', alignItems: 'center', gap: 20 }}>
+      <div className="card" style={{ padding: '22px 20px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div style={{
           width: 72,
           height: 72,
