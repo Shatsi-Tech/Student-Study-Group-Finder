@@ -11,6 +11,8 @@ router.get('/users', adminController.getAllUsers);
 router.put('/users/:id/toggle-status', adminController.toggleUserStatus);
 router.delete('/users/:id', adminController.deleteUser);
 router.get('/groups', adminController.getAllGroups);
+router.put('/groups/:id/status', adminController.updateGroupStatus);
+router.get('/sessions', adminController.getAllSessions);
 router.post('/reset-database', adminController.resetDatabase);
 
 module.exports = router;
