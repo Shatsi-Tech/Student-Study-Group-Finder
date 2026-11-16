@@ -296,21 +296,22 @@ export default function GroupDetailsPage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: 12, borderBottom: '2px solid #e2e8f0', paddingBottom: 2 }}>
+      <div style={{ display: 'flex', gap: 8, borderBottom: '2px solid #e2e8f0', paddingBottom: 2, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <button
           onClick={() => setActiveTab('discussions')}
           style={{
             background: 'none',
             border: 'none',
             borderBottom: activeTab === 'discussions' ? '3px solid #0b3b60' : '3px solid transparent',
-            padding: '10px 16px',
-            fontSize: '0.95rem',
+            padding: '10px 14px',
+            fontSize: '0.9rem',
             fontWeight: 600,
             color: activeTab === 'discussions' ? '#0b3b60' : '#64748b',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: 8
+            gap: 6,
+            whiteSpace: 'nowrap'
           }}
         >
           <MessageSquare size={16} /> Discussions ({posts.length})
@@ -322,17 +323,18 @@ export default function GroupDetailsPage() {
             background: 'none',
             border: 'none',
             borderBottom: activeTab === 'sessions' ? '3px solid #0b3b60' : '3px solid transparent',
-            padding: '10px 16px',
-            fontSize: '0.95rem',
+            padding: '10px 14px',
+            fontSize: '0.9rem',
             fontWeight: 600,
             color: activeTab === 'sessions' ? '#0b3b60' : '#64748b',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: 8
+            gap: 6,
+            whiteSpace: 'nowrap'
           }}
         >
-          <Calendar size={16} /> Study Sessions ({sessions.length})
+          <Calendar size={16} /> Sessions ({sessions.length})
         </button>
 
         <button
@@ -341,14 +343,15 @@ export default function GroupDetailsPage() {
             background: 'none',
             border: 'none',
             borderBottom: activeTab === 'members' ? '3px solid #0b3b60' : '3px solid transparent',
-            padding: '10px 16px',
-            fontSize: '0.95rem',
+            padding: '10px 14px',
+            fontSize: '0.9rem',
             fontWeight: 600,
             color: activeTab === 'members' ? '#0b3b60' : '#64748b',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: 8
+            gap: 6,
+            whiteSpace: 'nowrap'
           }}
         >
           <Users size={16} /> Members ({members.length})
@@ -361,14 +364,15 @@ export default function GroupDetailsPage() {
               background: 'none',
               border: 'none',
               borderBottom: activeTab === 'settings' ? '3px solid #0b3b60' : '3px solid transparent',
-              padding: '10px 16px',
-              fontSize: '0.95rem',
+              padding: '10px 14px',
+              fontSize: '0.9rem',
               fontWeight: 600,
               color: activeTab === 'settings' ? '#0b3b60' : '#64748b',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: 8
+              gap: 6,
+              whiteSpace: 'nowrap'
             }}
           >
             <Settings size={16} /> Leader Settings
