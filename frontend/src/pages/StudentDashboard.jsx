@@ -75,44 +75,40 @@ export default function StudentDashboard() {
         background: 'linear-gradient(135deg, #0b3b60 0%, #07263f 100%)',
         color: '#ffffff',
         borderRadius: 14,
-        padding: '28px 32px',
+        padding: '22px 20px',
         display: 'flex',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         alignItems: 'center',
-        gap: 20,
+        gap: 16,
         boxShadow: '0 10px 20px rgba(11, 59, 96, 0.15)'
       }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#f6d89b', fontSize: '0.85rem', fontWeight: 600, marginBottom: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#f6d89b', fontSize: '0.825rem', fontWeight: 600, marginBottom: 6 }}>
             <Sparkles size={16} color="#e09f3e" />
             Uganda Christian University • {user?.faculty || 'Academic Portal'}
           </div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1.2 }}>
+          <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.8rem)', fontWeight: 800, lineHeight: 1.2 }}>
             Welcome back, {user?.full_name}!
           </h1>
-          <p style={{ color: '#cbd5e1', fontSize: '0.95rem', marginTop: 6, maxWidth: 540 }}>
+          <p style={{ color: '#cbd5e1', fontSize: '0.9rem', marginTop: 6, maxWidth: 540 }}>
             {user?.programme} • {user?.year_of_study} ({user?.reg_number})
           </p>
         </div>
 
         {/* Quick Action Buttons */}
-        <div style={{ display: 'flex', gap: 12 }}>
-          <Link to="/explore" className="btn btn-accent" style={{ padding: '10px 18px' }}>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <Link to="/explore" className="btn btn-accent" style={{ padding: '8px 16px' }}>
             <Compass size={16} /> Explore Groups
           </Link>
-          <Link to="/create-group" className="btn btn-outline" style={{ color: '#ffffff', borderColor: '#ffffff', padding: '10px 18px' }}>
+          <Link to="/create-group" className="btn btn-outline" style={{ color: '#ffffff', borderColor: '#ffffff', padding: '8px 16px' }}>
             <PlusCircle size={16} /> Create Group
           </Link>
         </div>
       </div>
 
       {/* Metrics Row */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: 18
-      }}>
+      <div className="grid-stats">
         <StatCard
           title="Groups Joined"
           value={myGroups.length}
@@ -139,7 +135,7 @@ export default function StudentDashboard() {
       {/* Main Grid: My Groups & Upcoming Sessions */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
         gap: 24
       }}>
         {/* Left Column: My Groups */}
