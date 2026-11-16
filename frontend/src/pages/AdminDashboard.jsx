@@ -108,7 +108,7 @@ export default function AdminDashboard() {
       <div style={{
         backgroundColor: '#07263f',
         color: '#ffffff',
-        padding: '24px 30px',
+        padding: '20px',
         borderRadius: 14,
         display: 'flex',
         justifyContent: 'space-between',
@@ -120,8 +120,8 @@ export default function AdminDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#e09f3e', fontSize: '0.8rem', fontWeight: 700, marginBottom: 4 }}>
             <ShieldCheck size={16} /> SYSTEM ADMINISTRATOR CONTROL CONSOLE
           </div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Platform Oversight & Analytics</h1>
-          <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: 4 }}>
+          <h1 style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', fontWeight: 800 }}>Platform Oversight & Analytics</h1>
+          <p style={{ color: '#94a3b8', fontSize: '0.875rem', marginTop: 4 }}>
             Uganda Christian University Study Group Finder Management
           </p>
         </div>
@@ -136,11 +136,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Metrics Row */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: 18
-      }}>
+      <div className="grid-stats">
         <StatCard
           title="Total Registered Students"
           value={stats.totalUsers}
@@ -172,18 +168,19 @@ export default function AdminDashboard() {
       </div>
 
       {/* Sub-navigation Tabs */}
-      <div style={{ display: 'flex', gap: 12, borderBottom: '2px solid #e2e8f0', paddingBottom: 2, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 8, borderBottom: '2px solid #e2e8f0', paddingBottom: 2, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <button
           onClick={() => setActiveTab('overview')}
           style={{
             background: 'none',
             border: 'none',
             borderBottom: activeTab === 'overview' ? '3px solid #0b3b60' : '3px solid transparent',
-            padding: '10px 16px',
-            fontSize: '0.95rem',
+            padding: '10px 14px',
+            fontSize: '0.9rem',
             fontWeight: 600,
             color: activeTab === 'overview' ? '#0b3b60' : '#64748b',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            whiteSpace: 'nowrap'
           }}
         >
           Overview & Sessions
@@ -194,11 +191,12 @@ export default function AdminDashboard() {
             background: 'none',
             border: 'none',
             borderBottom: activeTab === 'groups' ? '3px solid #0b3b60' : '3px solid transparent',
-            padding: '10px 16px',
-            fontSize: '0.95rem',
+            padding: '10px 14px',
+            fontSize: '0.9rem',
             fontWeight: 600,
             color: activeTab === 'groups' ? '#0b3b60' : '#64748b',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            whiteSpace: 'nowrap'
           }}
         >
           Study Groups Approval ({groupsList.length})
@@ -214,11 +212,12 @@ export default function AdminDashboard() {
             background: 'none',
             border: 'none',
             borderBottom: activeTab === 'users' ? '3px solid #0b3b60' : '3px solid transparent',
-            padding: '10px 16px',
-            fontSize: '0.95rem',
+            padding: '10px 14px',
+            fontSize: '0.9rem',
             fontWeight: 600,
             color: activeTab === 'users' ? '#0b3b60' : '#64748b',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            whiteSpace: 'nowrap'
           }}
         >
           User Accounts ({usersList.length})
@@ -250,7 +249,7 @@ export default function AdminDashboard() {
                 <p style={{ fontSize: '0.9rem' }}>No study sessions scheduled yet. When students create study groups, sessions will appear here.</p>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 14 }}>
                 {stats.upcomingSessionsList.map((s) => (
                   <div key={s.id} style={{
                     padding: 16,
@@ -296,7 +295,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Analytics Sub-grid: Active Courses & Faculty Distribution */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 20 }}>
             {/* Most Active Courses */}
             <div className="card" style={{ padding: 24 }}>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0b3b60', marginBottom: 16 }}>
@@ -370,8 +369,8 @@ export default function AdminDashboard() {
               <p>No study groups submitted yet. When students create groups, they will appear here for your approval.</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+            <div className="table-responsive">
+              <table style={{ width: '100%', minWidth: 620, borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
                     <th style={{ padding: '10px 12px' }}>Group Name</th>
@@ -447,8 +446,8 @@ export default function AdminDashboard() {
           <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0b3b60', marginBottom: 16 }}>
             Registered Student & Staff Accounts
           </h3>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+          <div className="table-responsive">
+            <table style={{ width: '100%', minWidth: 620, borderCollapse: 'collapse', fontSize: '0.85rem' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
                   <th style={{ padding: '10px 12px' }}>Name</th>
