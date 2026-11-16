@@ -45,14 +45,8 @@ export default function LoginPage() {
 
   const fillCredentials = (role) => {
     if (role === 'admin') {
-      setIdentifier('admin@ucu.ac.ug');
-      setPassword('Admin@123');
-    } else if (role === 'leader') {
-      setIdentifier('kigozi.brian@ucu.ac.ug');
-      setPassword('Student@123');
-    } else {
-      setIdentifier('nakato.sarah@ucu.ac.ug');
-      setPassword('Student@123');
+      setIdentifier('shatsikarongo55@mail.com');
+      setPassword('Shatsi@1234');
     }
   };
 
@@ -196,7 +190,7 @@ export default function LoginPage() {
               className="btn btn-outline btn-sm"
               style={{ fontSize: '0.75rem', padding: '6px 16px', color: '#0b3b60', fontWeight: 700 }}
             >
-              Fill Admin Credentials (admin@ucu.ac.ug)
+              Fill Administrator (shatsikarongo55@mail.com)
             </button>
           </div>
         </div>
