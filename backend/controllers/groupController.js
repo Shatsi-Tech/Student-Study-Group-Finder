@@ -33,10 +33,10 @@ async function createGroup(req, res, next) {
         const groupCapacity = parseInt(max_members, 10) || 15;
         const type = meeting_type || 'Physical';
 
-        // 1. Insert into study_groups
+        // 1. Insert into study_groups with status 'Pending' awaiting Administrator approval
         const [result] = await db.query(
             `INSERT INTO study_groups (name, course_name, course_code, faculty, description, meeting_location, meeting_type, leader_id, max_members, status)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active')`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')`,
             [name.trim(), course_name.trim(), course_code.trim().toUpperCase(), faculty.trim(), description.trim(), meeting_location.trim(), type, leaderId, groupCapacity]
         );
 
@@ -49,28 +49,57 @@ async function createGroup(req, res, next) {
             [newGroupId, leaderId]
         );
 
-        // 3. Create initial welcome post
+        // 3. Automatically schedule an Inaugural Study Session for this group
+        // This ensures the session immediately appears in Study Sessions and Admin Dashboard
+        const sessionDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        await db.query(
+            `INSERT INTO study_sessions (group_id, created_by, title, study_date, start_time, end_time, location_or_link, description, status)
+             VALUES (?, ?, ?, ?, '14:00', '16:00', ?, ?, 'UPCOMING')`,
+            [
+                newGroupId,
+                leaderId,
+                `Inaugural Study & Orientation Session - ${name.trim()}`,
+                sessionDate,
+                meeting_location.trim(),
+                `First collaborative orientation and revision session for ${name.trim()} (${course_code.trim().toUpperCase()} - ${course_name.trim()}).`
+            ]
+        );
+
+        // 4. Create initial welcome post
         await db.query(
             `INSERT INTO posts (group_id, user_id, title, content, post_type, is_pinned)
              VALUES (?, ?, 'Welcome to our new study group!', ?, 'ANNOUNCEMENT', 1)`,
             [
                 newGroupId,
                 leaderId,
-                `Welcome everyone to ${name.trim()} for ${course_code.trim().toUpperCase()} (${course_name.trim()}). Feel free to ask questions, share revision notes, and check the upcoming study sessions!`
+                `Welcome everyone to ${name.trim()} for ${course_code.trim().toUpperCase()} (${course_name.trim()}). Feel free to ask questions, share revision notes, and check our scheduled study sessions!`
             ]
         );
 
-        // 4. Create confirmation notification for leader
+        // 5. Create confirmation notification for leader
         await db.query(
             `INSERT INTO notifications (user_id, title, message, type, is_read, link)
-             VALUES (?, 'Study Group Created', ?, 'SYSTEM', 0, ?)`,
-            [leaderId, `Your study group "${name.trim()}" is now live in the UCU directory.`, `/groups/${newGroupId}`]
+             VALUES (?, 'Study Group Created (Pending Admin Review)', ?, 'SYSTEM', 0, ?)`,
+            [leaderId, `Your study group "${name.trim()}" has been submitted and is pending administrator approval.`, `/groups/${newGroupId}`]
         );
+
+        // 6. Notify Administrators of new group submission
+        const [admins] = await db.query('SELECT id FROM users WHERE role = "ADMIN"');
+        if (admins && admins.length > 0) {
+            for (const admin of admins) {
+                await db.query(
+                    `INSERT INTO notifications (user_id, title, message, type, is_read, link)
+                     VALUES (?, 'New Study Group Awaiting Approval', ?, 'ADMIN', 0, '/admin')`,
+                    [admin.id, `New group "${name.trim()}" (${course_code.trim().toUpperCase()}) created. Please review and approve or reject it.`]
+                );
+            }
+        }
 
         return res.status(201).json({
             success: true,
-            message: 'Study group created successfully! You are now the Group Leader.',
-            groupId: newGroupId
+            message: 'Study group created successfully! It is pending administrator approval.',
+            groupId: newGroupId,
+            status: 'Pending'
         });
     } catch (err) {
         next(err);
@@ -85,7 +114,7 @@ async function getGroups(req, res, next) {
         const { search, faculty, meeting_type, my_groups } = req.query;
         const currentUserId = req.user ? req.user.id : null;
 
-        let [groups] = await db.query('SELECT * FROM study_groups WHERE status = "Active" ORDER BY created_at DESC');
+        let [groups] = await db.query('SELECT * FROM study_groups ORDER BY created_at DESC');
 
         // Fetch leaders and member counts
         const [memberships] = await db.query('SELECT group_id, user_id, member_role, status FROM group_members WHERE status = "APPROVED"');
