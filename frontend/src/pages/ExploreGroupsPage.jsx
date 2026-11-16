@@ -112,7 +112,7 @@ export default function ExploreGroupsPage() {
             </div>
 
             {/* Meeting Type Dropdown */}
-            <div style={{ flex: '0 1 160px' }}>
+            <div style={{ flex: '1 1 140px' }}>
               <select
                 value={selectedMeetingType}
                 onChange={(e) => setSelectedMeetingType(e.target.value)}
@@ -124,7 +124,7 @@ export default function ExploreGroupsPage() {
               </select>
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ padding: '0 20px' }}>
+            <button type="submit" className="btn btn-primary" style={{ padding: '0 20px', minHeight: 42 }}>
               Filter
             </button>
           </div>
@@ -161,8 +161,8 @@ export default function ExploreGroupsPage() {
           </div>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: 24
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
+            gap: 20
           }}>
             {groups.map(group => (
               <GroupCard
