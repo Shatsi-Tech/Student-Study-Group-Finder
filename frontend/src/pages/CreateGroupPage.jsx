@@ -73,11 +73,11 @@ export default function CreateGroupPage() {
 
   return (
     <div style={{ maxWidth: 780, margin: '0 auto' }}>
-      <div className="card" style={{ padding: 36 }}>
-        <div style={{ marginBottom: 28, borderBottom: '1px solid #e2e8f0', paddingBottom: 16 }}>
+      <div className="card" style={{ padding: '24px 20px' }}>
+        <div style={{ marginBottom: 24, borderBottom: '1px solid #e2e8f0', paddingBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#0b3b60', marginBottom: 4 }}>
-            <PlusCircle size={24} />
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 800 }}>Create a Study Group</h1>
+            <PlusCircle size={22} />
+            <h1 style={{ fontSize: 'clamp(1.3rem, 4vw, 1.6rem)', fontWeight: 800 }}>Create a Study Group</h1>
           </div>
           <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
             Initiate a collaborative learning group for your course. As the creator, you will automatically be designated as the <strong>Group Leader</strong>.
