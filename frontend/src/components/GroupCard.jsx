@@ -16,7 +16,24 @@ export default function GroupCard({ group, onJoin, isJoining }) {
       <div>
         {/* Top Badges */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <span className="badge badge-primary">{group.course_code}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span className="badge badge-primary">{group.course_code}</span>
+            {group.status === 'Pending' && (
+              <span style={{ fontSize: '0.7rem', padding: '2px 7px', borderRadius: 10, backgroundColor: '#fef3c7', color: '#b45309', fontWeight: 700, border: '1px solid #fde68a' }}>
+                Pending Review
+              </span>
+            )}
+            {group.status === 'Rejected' && (
+              <span style={{ fontSize: '0.7rem', padding: '2px 7px', borderRadius: 10, backgroundColor: '#fee2e2', color: '#b91c1c', fontWeight: 700 }}>
+                Rejected
+              </span>
+            )}
+            {group.status === 'Active' && (
+              <span style={{ fontSize: '0.7rem', padding: '2px 7px', borderRadius: 10, backgroundColor: '#ecfdf5', color: '#047857', fontWeight: 700 }}>
+                Active
+              </span>
+            )}
+          </div>
           <span style={{
             fontSize: '0.75rem',
             padding: '2px 8px',
