@@ -52,9 +52,12 @@ let autoIncrements = {
     notifications: 1
 };
 
+const STORE_VERSION = 3; // Clean slate version: wiped all dummy data
+
 function saveStore() {
     try {
         const data = {
+            version: STORE_VERSION,
             store,
             autoIncrements,
             savedAt: new Date().toISOString()
@@ -70,7 +73,7 @@ function loadStore() {
         try {
             const raw = fs.readFileSync(STORE_PATH, 'utf8');
             const data = JSON.parse(raw);
-            if (data.store) {
+            if (data.store && data.version === STORE_VERSION) {
                 store = data.store;
                 autoIncrements = data.autoIncrements || autoIncrements;
                 return true;
@@ -82,9 +85,9 @@ function loadStore() {
     return false;
 }
 
-// Seed Store if empty
+// Clean Store: only master admin account is preserved, everything else is blank
 function seedStore() {
-    const passwordHash = '$2a$10$wT0/4b6pGqXG3PZ1gU2Q6.J8i2rQ2g4k6n8p0r2t4v6x8z0b2d4f6'; // Admin@123 / Student@123
+    const passwordHash = '$2a$10$wT0/4b6pGqXG3PZ1gU2Q6.J8i2rQ2g4k6n8p0r2t4v6x8z0b2d4f6'; // Admin@123
 
     store.users = [
         {
@@ -100,398 +103,29 @@ function seedStore() {
             bio: 'System administrator for UCU academic study groups.',
             avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
             is_active: 1,
-            created_at: '2024-09-01T08:00:00Z',
-            updated_at: '2024-09-01T08:00:00Z'
-        },
-        {
-            id: 2,
-            full_name: 'Brian Kigozi',
-            reg_number: 'S22/B23/BSIT/014',
-            email: 'kigozi.brian@ucu.ac.ug',
-            password_hash: passwordHash,
-            role: 'STUDENT',
-            programme: 'Bachelor of Science in Information Technology',
-            faculty: 'Faculty of Science & Technology',
-            year_of_study: 'Year 3',
-            bio: 'Passionate full-stack developer and open source enthusiast. Group leader for Web Development.',
-            avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-            is_active: 1,
-            created_at: '2024-09-01T09:00:00Z',
-            updated_at: '2024-09-01T09:00:00Z'
-        },
-        {
-            id: 3,
-            full_name: 'Sarah Nakato',
-            reg_number: 'S22/B23/BSCS/029',
-            email: 'nakato.sarah@ucu.ac.ug',
-            password_hash: passwordHash,
-            role: 'STUDENT',
-            programme: 'Bachelor of Science in Computer Science',
-            faculty: 'Faculty of Science & Technology',
-            year_of_study: 'Year 3',
-            bio: 'Data science and AI researcher. Interested in Python and machine learning algorithms.',
-            avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-            is_active: 1,
-            created_at: '2024-09-02T10:00:00Z',
-            updated_at: '2024-09-02T10:00:00Z'
-        },
-        {
-            id: 4,
-            full_name: 'David Musiime',
-            reg_number: 'S23/B23/LLB/055',
-            email: 'musiime.david@ucu.ac.ug',
-            password_hash: passwordHash,
-            role: 'STUDENT',
-            programme: 'Bachelor of Laws',
-            faculty: 'Faculty of Law',
-            year_of_study: 'Year 2',
-            bio: 'Moot court competitor and legal research enthusiast focusing on East African Commercial Law.',
-            avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-            is_active: 1,
-            created_at: '2024-09-03T11:00:00Z',
-            updated_at: '2024-09-03T11:00:00Z'
-        },
-        {
-            id: 5,
-            full_name: 'Grace Achen',
-            reg_number: 'S21/B23/BBA/088',
-            email: 'achen.grace@ucu.ac.ug',
-            password_hash: passwordHash,
-            role: 'STUDENT',
-            programme: 'Bachelor of Business Administration',
-            faculty: 'School of Business',
-            year_of_study: 'Year 3',
-            bio: 'Financial analysis and auditing major. Leading the Corporate Finance revision circle.',
-            avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
-            is_active: 1,
-            created_at: '2024-09-04T12:00:00Z',
-            updated_at: '2024-09-04T12:00:00Z'
-        },
-        {
-            id: 6,
-            full_name: 'Emmanuel Okello',
-            reg_number: 'S23/B23/BIT/102',
-            email: 'okello.emmanuel@ucu.ac.ug',
-            password_hash: passwordHash,
-            role: 'STUDENT',
-            programme: 'Bachelor of Information Technology',
-            faculty: 'Faculty of Science & Technology',
-            year_of_study: 'Year 2',
-            bio: 'Networking enthusiast preparing for CCNA and database systems examinations.',
-            avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-            is_active: 1,
-            created_at: '2024-09-05T13:00:00Z',
-            updated_at: '2024-09-05T13:00:00Z'
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
         }
     ];
-    autoIncrements.users = 7;
+    autoIncrements.users = 2;
 
-    store.study_groups = [
-        {
-            id: 1,
-            name: 'Web & Mobile Dev Masterminds',
-            course_name: 'Web and Mobile Application Development',
-            course_code: 'BIT3104',
-            faculty: 'Faculty of Science & Technology',
-            description: 'Collaborative revision, code reviews and project sprint workshops for React, Node.js, and API design. All BSIT and BSCS students welcome!',
-            meeting_location: 'Tech Lab 2 / Google Meet',
-            meeting_type: 'Hybrid',
-            leader_id: 2,
-            max_members: 12,
-            status: 'Active',
-            created_at: '2024-09-01T10:00:00Z',
-            updated_at: '2024-09-01T10:00:00Z'
-        },
-        {
-            id: 2,
-            name: 'Data Structures & Algorithms Circle',
-            course_name: 'Data Structures and Algorithms',
-            course_code: 'CSC2101',
-            faculty: 'Faculty of Science & Technology',
-            description: 'Weekly problem-solving sessions tackling recursion, binary search trees, dynamic programming, and algorithm complexity in C++ and Java.',
-            meeting_location: 'Hamu Mukasa Library Discussion Room 3',
-            meeting_type: 'Physical',
-            leader_id: 3,
-            max_members: 10,
-            status: 'Active',
-            created_at: '2024-09-05T09:00:00Z',
-            updated_at: '2024-09-05T09:00:00Z'
-        },
-        {
-            id: 3,
-            name: 'Constitutional Law Forum',
-            course_name: 'Constitutional Law of Uganda',
-            course_code: 'LAW1201',
-            faculty: 'Faculty of Law',
-            description: 'In-depth analysis of landmark cases, judicial precedent, constitutional petitions, and preparation for mid-semester moot presentations.',
-            meeting_location: 'Law Quad Gazebo / Zoom',
-            meeting_type: 'Hybrid',
-            leader_id: 4,
-            max_members: 15,
-            status: 'Active',
-            created_at: '2024-09-08T08:30:00Z',
-            updated_at: '2024-09-08T08:30:00Z'
-        },
-        {
-            id: 4,
-            name: 'Corporate Finance & Valuation Group',
-            course_name: 'Corporate Finance & Investment',
-            course_code: 'BBA3205',
-            faculty: 'School of Business',
-            description: 'Revising discounted cash flow valuation, capital budgeting, financial ratio analysis, and past university examination papers.',
-            meeting_location: 'Business Building Room B-14',
-            meeting_type: 'Physical',
-            leader_id: 5,
-            max_members: 8,
-            status: 'Active',
-            created_at: '2024-09-10T10:20:00Z',
-            updated_at: '2024-09-10T10:20:00Z'
-        },
-        {
-            id: 5,
-            name: 'Database Systems & SQL Lab',
-            course_name: 'Database Management Systems',
-            course_code: 'BIT2103',
-            faculty: 'Faculty of Science & Technology',
-            description: 'Practical query optimization, ER diagram normalization to BCNF, MySQL indexing, and transaction management practices.',
-            meeting_location: 'Google Meet (Online)',
-            meeting_type: 'Online',
-            leader_id: 2,
-            max_members: 20,
-            status: 'Active',
-            created_at: '2024-09-12T16:00:00Z',
-            updated_at: '2024-09-12T16:00:00Z'
-        }
-    ];
-    autoIncrements.study_groups = 6;
+    store.study_groups = [];
+    autoIncrements.study_groups = 1;
 
-    store.group_members = [
-        { id: 1, group_id: 1, user_id: 2, member_role: 'LEADER', status: 'APPROVED', joined_at: '2024-09-01T10:00:00Z' },
-        { id: 2, group_id: 1, user_id: 3, member_role: 'MEMBER', status: 'APPROVED', joined_at: '2024-09-02T11:30:00Z' },
-        { id: 3, group_id: 1, user_id: 6, member_role: 'MEMBER', status: 'APPROVED', joined_at: '2024-09-03T14:15:00Z' },
-        { id: 4, group_id: 2, user_id: 3, member_role: 'LEADER', status: 'APPROVED', joined_at: '2024-09-05T09:00:00Z' },
-        { id: 5, group_id: 2, user_id: 2, member_role: 'MEMBER', status: 'APPROVED', joined_at: '2024-09-06T12:00:00Z' },
-        { id: 6, group_id: 2, user_id: 6, member_role: 'MEMBER', status: 'APPROVED', joined_at: '2024-09-07T15:45:00Z' },
-        { id: 7, group_id: 3, user_id: 4, member_role: 'LEADER', status: 'APPROVED', joined_at: '2024-09-08T08:30:00Z' },
-        { id: 8, group_id: 4, user_id: 5, member_role: 'LEADER', status: 'APPROVED', joined_at: '2024-09-10T10:20:00Z' },
-        { id: 9, group_id: 5, user_id: 2, member_role: 'LEADER', status: 'APPROVED', joined_at: '2024-09-12T16:00:00Z' },
-        { id: 10, group_id: 5, user_id: 6, member_role: 'MEMBER', status: 'APPROVED', joined_at: '2024-09-13T17:00:00Z' }
-    ];
-    autoIncrements.group_members = 11;
+    store.group_members = [];
+    autoIncrements.group_members = 1;
 
-    store.study_sessions = [
-        {
-            id: 1,
-            group_id: 1,
-            created_by: 2,
-            title: 'React Router & REST API Integration Sprint',
-            study_date: '2024-11-20',
-            start_time: '14:00:00',
-            end_time: '16:30:00',
-            location_or_link: 'Tech Lab 2 (Main Campus)',
-            description: 'Hands-on session building Axios interceptors, JWT storage, and state management in React.',
-            status: 'UPCOMING',
-            created_at: '2024-09-15T10:00:00Z'
-        },
-        {
-            id: 2,
-            group_id: 1,
-            created_by: 2,
-            title: 'Database Normalization & MySQL Workbench Lab',
-            study_date: '2024-11-25',
-            start_time: '10:00:00',
-            end_time: '12:00:00',
-            location_or_link: 'https://meet.google.com/abc-defg-hij',
-            description: 'Reviewing 1NF through BCNF with real exam questions and SQL scripts.',
-            status: 'UPCOMING',
-            created_at: '2024-09-16T11:00:00Z'
-        },
-        {
-            id: 3,
-            group_id: 2,
-            created_by: 3,
-            title: 'Tree Traversal & Graph Search Algorithms',
-            study_date: '2024-11-22',
-            start_time: '16:00:00',
-            end_time: '18:00:00',
-            location_or_link: 'Hamu Mukasa Library Room 3',
-            description: 'Covering Depth First Search (DFS), Breadth First Search (BFS), and Dijkstra shortest path.',
-            status: 'UPCOMING',
-            created_at: '2024-09-17T12:00:00Z'
-        },
-        {
-            id: 4,
-            group_id: 3,
-            created_by: 4,
-            title: 'Constitutional Interpretation Case Law Review',
-            study_date: '2024-11-23',
-            start_time: '09:00:00',
-            end_time: '11:30:00',
-            location_or_link: 'Law Quad Gazebo',
-            description: 'Analyzing case notes on separation of powers and judicial independence in Uganda.',
-            status: 'UPCOMING',
-            created_at: '2024-09-18T13:00:00Z'
-        },
-        {
-            id: 5,
-            group_id: 4,
-            created_by: 5,
-            title: 'Discounted Cash Flow (DCF) Valuation Workshop',
-            study_date: '2024-11-24',
-            start_time: '11:00:00',
-            end_time: '13:00:00',
-            location_or_link: 'Business Building Room B-14',
-            description: 'Bring financial calculators or laptops for Excel modeling.',
-            status: 'UPCOMING',
-            created_at: '2024-09-19T14:00:00Z'
-        }
-    ];
-    autoIncrements.study_sessions = 6;
+    store.study_sessions = [];
+    autoIncrements.study_sessions = 1;
 
-    store.posts = [
-        {
-            id: 1,
-            group_id: 1,
-            user_id: 2,
-            title: 'Welcome to Web & Mobile Dev Study Group!',
-            content: 'Welcome everyone! In this group we will cover frontend React development, Express.js REST APIs, and MySQL relational modeling. Please review our upcoming session in Tech Lab 2.',
-            post_type: 'ANNOUNCEMENT',
-            is_pinned: 1,
-            created_at: '2024-09-02T10:00:00Z',
-            updated_at: '2024-09-02T10:00:00Z'
-        },
-        {
-            id: 2,
-            group_id: 1,
-            user_id: 3,
-            title: 'Question regarding JWT expiration handling',
-            content: 'When an access token expires, should we catch the 401 error in Axios interceptors and automatically refresh, or redirect immediately to login?',
-            post_type: 'QUESTION',
-            is_pinned: 0,
-            created_at: '2024-09-03T11:30:00Z',
-            updated_at: '2024-09-03T11:30:00Z'
-        },
-        {
-            id: 3,
-            group_id: 1,
-            user_id: 6,
-            title: 'Useful Resource: Official React 18 Docs & Cheatsheets',
-            content: 'Found this great cheat-sheet on hooks lifecycle and cleanup functions for useEffect. Sharing for our lab preparation!',
-            post_type: 'DISCUSSION',
-            is_pinned: 0,
-            created_at: '2024-09-04T12:00:00Z',
-            updated_at: '2024-09-04T12:00:00Z'
-        },
-        {
-            id: 4,
-            group_id: 2,
-            user_id: 3,
-            title: 'Mid-Semester Algorithms Revision Topics',
-            content: 'Please make sure to review Big-O notation, quick sort partitions, and heap properties prior to our library meeting on Friday.',
-            post_type: 'ANNOUNCEMENT',
-            is_pinned: 1,
-            created_at: '2024-09-05T13:00:00Z',
-            updated_at: '2024-09-05T13:00:00Z'
-        },
-        {
-            id: 5,
-            group_id: 3,
-            user_id: 4,
-            title: 'Reading list for Case Analysis Session',
-            content: 'Everyone should read Tinyefuza v Attorney General (Constitutional Appeal No 1 of 1997) before Saturday morning.',
-            post_type: 'ANNOUNCEMENT',
-            is_pinned: 1,
-            created_at: '2024-09-06T14:00:00Z',
-            updated_at: '2024-09-06T14:00:00Z'
-        }
-    ];
-    autoIncrements.posts = 6;
+    store.posts = [];
+    autoIncrements.posts = 1;
 
-    store.comments = [
-        {
-            id: 1,
-            post_id: 2,
-            user_id: 2,
-            content: 'Great question Sarah! The industry best practice is using Axios response interceptors to inspect status code 401, clear localStorage, and redirect to /login with an expired session message.',
-            created_at: '2024-09-03T12:00:00Z'
-        },
-        {
-            id: 2,
-            post_id: 2,
-            user_id: 6,
-            content: 'I agree with Brian. It prevents user confusion when their token reaches its 24-hour expiration window.',
-            created_at: '2024-09-03T12:30:00Z'
-        },
-        {
-            id: 3,
-            post_id: 3,
-            user_id: 2,
-            content: 'Thanks Emmanuel! This will be very handy for our component architecture demonstration.',
-            created_at: '2024-09-04T14:00:00Z'
-        },
-        {
-            id: 4,
-            post_id: 4,
-            user_id: 2,
-            content: 'Looking forward to the heap properties breakdown. Thanks Sarah!',
-            created_at: '2024-09-05T15:00:00Z'
-        }
-    ];
-    autoIncrements.comments = 5;
+    store.comments = [];
+    autoIncrements.comments = 1;
 
-    store.notifications = [
-        {
-            id: 1,
-            user_id: 2,
-            title: 'New Member Joined',
-            message: 'Sarah Nakato joined Web & Mobile Dev Masterminds.',
-            type: 'MEMBER',
-            is_read: 0,
-            link: '/groups/1',
-            created_at: '2024-09-02T11:30:00Z'
-        },
-        {
-            id: 2,
-            user_id: 2,
-            title: 'New Comment on Post',
-            message: 'Sarah asked a question regarding JWT token expiration handling.',
-            type: 'COMMENT',
-            is_read: 0,
-            link: '/groups/1',
-            created_at: '2024-09-03T11:35:00Z'
-        },
-        {
-            id: 3,
-            user_id: 3,
-            title: 'Upcoming Study Session',
-            message: 'Session "React Router & REST API Integration Sprint" starts on Nov 20 at 14:00.',
-            type: 'SESSION',
-            is_read: 0,
-            link: '/sessions',
-            created_at: '2024-09-15T10:05:00Z'
-        },
-        {
-            id: 4,
-            user_id: 4,
-            title: 'Study Group Active',
-            message: 'Your Constitutional Law Forum is listed in the UCU directory.',
-            type: 'SYSTEM',
-            is_read: 1,
-            link: '/groups/3',
-            created_at: '2024-09-08T08:35:00Z'
-        },
-        {
-            id: 5,
-            user_id: 6,
-            title: 'Welcome to Student Study Group Finder',
-            message: 'Explore groups for your Faculty and start collaborating with course peers.',
-            type: 'SYSTEM',
-            is_read: 1,
-            link: '/explore',
-            created_at: '2024-09-05T13:05:00Z'
-        }
-    ];
-    autoIncrements.notifications = 6;
+    store.notifications = [];
+    autoIncrements.notifications = 1;
 
     saveStore();
 }
@@ -700,12 +334,36 @@ function executeStoreQuery(sql, params = []) {
             const now = new Date().toISOString();
             const newRecord = { id: newId, created_at: now, updated_at: now };
 
-            // Map columns from INSERT INTO table (col1, col2) VALUES (?, ?)
-            const colsMatch = sql.match(/\(([^)]+)\)\s*VALUES/i);
+            // Map columns and values from INSERT INTO table (col1, col2) VALUES (val1, val2)
+            const colsMatch = sql.match(/INSERT\s+INTO\s+[a-zA-Z0-9_]+\s*\(([^)]+)\)\s*VALUES\s*\(([\s\S]+?)\)/i);
             if (colsMatch) {
                 const cols = colsMatch[1].split(',').map(c => c.trim().replace(/`/g, ''));
+                const rawVals = colsMatch[2].split(',').map(v => v.trim());
+                let paramIndex = 0;
                 cols.forEach((col, idx) => {
-                    newRecord[col] = params[idx] !== undefined ? params[idx] : null;
+                    const rawVal = rawVals[idx];
+                    if (rawVal === '?') {
+                        newRecord[col] = params[paramIndex] !== undefined ? params[paramIndex] : null;
+                        paramIndex++;
+                    } else if (rawVal !== undefined) {
+                        // Literal string, number, or boolean
+                        if ((rawVal.startsWith("'") && rawVal.endsWith("'")) || (rawVal.startsWith('"') && rawVal.endsWith('"'))) {
+                            newRecord[col] = rawVal.slice(1, -1);
+                        } else if (!isNaN(Number(rawVal))) {
+                            newRecord[col] = Number(rawVal);
+                        } else if (rawVal.toUpperCase() === 'TRUE') {
+                            newRecord[col] = 1;
+                        } else if (rawVal.toUpperCase() === 'FALSE') {
+                            newRecord[col] = 0;
+                        } else if (rawVal.toUpperCase() === 'NULL') {
+                            newRecord[col] = null;
+                        } else {
+                            newRecord[col] = rawVal;
+                        }
+                    } else {
+                        newRecord[col] = params[paramIndex] !== undefined ? params[paramIndex] : null;
+                        paramIndex++;
+                    }
                 });
             }
 
@@ -863,5 +521,6 @@ module.exports = {
     initDatabase,
     isMySQLActive: () => useMySQL,
     getStore: () => store,
-    saveStore
+    saveStore,
+    seedStore
 };
