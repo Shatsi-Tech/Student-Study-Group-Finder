@@ -5,6 +5,7 @@ const { authenticate } = require('../middleware/authMiddleware');
 
 router.post('/', authenticate, sessionController.createSession);
 router.get('/my-upcoming', authenticate, sessionController.getUserUpcomingSessions);
+router.get('/upcoming', authenticate, sessionController.getUserUpcomingSessions);
 router.get('/group/:groupId', authenticate, sessionController.getGroupSessions);
 router.put('/:id/status', authenticate, sessionController.updateSessionStatus);
 
