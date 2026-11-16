@@ -173,10 +173,28 @@ async function getAllGroups(req, res, next) {
     }
 }
 
+/**
+ * Reset all database content to clean slate (Only Admin account is kept)
+ */
+async function resetDatabase(req, res, next) {
+    try {
+        if (db.seedStore) {
+            db.seedStore();
+        }
+        return res.status(200).json({
+            success: true,
+            message: 'Database reset to clean slate successfully. All dummy accounts and groups have been removed.'
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getStats,
     getAllUsers,
     toggleUserStatus,
     deleteUser,
-    getAllGroups
+    getAllGroups,
+    resetDatabase
 };
