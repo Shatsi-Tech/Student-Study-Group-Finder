@@ -189,19 +189,40 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: 24
-          }}>
-            {featuredGroups.map((group) => (
-              <GroupCard
-                key={group.id}
-                group={group}
-                onJoin={() => navigate('/login')}
-              />
-            ))}
-          </div>
+          {featuredGroups.length === 0 ? (
+            <div style={{
+              backgroundColor: '#ffffff',
+              borderRadius: 12,
+              padding: '48px 24px',
+              textAlign: 'center',
+              border: '1px dashed #cbd5e1'
+            }}>
+              <BookOpen size={48} color="#0b3b60" style={{ margin: '0 auto 12px', opacity: 0.5 }} />
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0b3b60', marginBottom: 8 }}>
+                No Study Groups Created Yet
+              </h3>
+              <p style={{ color: '#64748b', fontSize: '0.9rem', maxWidth: 460, margin: '0 auto 20px' }}>
+                Be the pioneer! Create a student account and start the first academic study group for your course.
+              </p>
+              <Link to="/register" className="btn btn-primary">
+                Register & Start a Group
+              </Link>
+            </div>
+          ) : (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: 24
+            }}>
+              {featuredGroups.map((group) => (
+                <GroupCard
+                  key={group.id}
+                  group={group}
+                  onJoin={() => navigate('/login')}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
