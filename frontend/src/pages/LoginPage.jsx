@@ -178,7 +178,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Quick Demo Credentials */}
+        {/* Quick Admin Credential */}
         <div style={{
           marginTop: 24,
           padding: 14,
@@ -187,32 +187,16 @@ export default function LoginPage() {
           border: '1px dashed #cbd5e1'
         }}>
           <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0b3b60', marginBottom: 8, textAlign: 'center' }}>
-            DEMONSTRATION QUICK-FILL ACCOUNTS:
+            SYSTEM ADMINISTRATOR ACCESS:
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
-            <button
-              type="button"
-              onClick={() => fillCredentials('leader')}
-              className="btn btn-outline btn-sm"
-              style={{ fontSize: '0.7rem', padding: '4px 6px' }}
-            >
-              Group Leader
-            </button>
-            <button
-              type="button"
-              onClick={() => fillCredentials('student')}
-              className="btn btn-outline btn-sm"
-              style={{ fontSize: '0.7rem', padding: '4px 6px' }}
-            >
-              Student
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
             <button
               type="button"
               onClick={() => fillCredentials('admin')}
               className="btn btn-outline btn-sm"
-              style={{ fontSize: '0.7rem', padding: '4px 6px', color: '#0b3b60', fontWeight: 700 }}
+              style={{ fontSize: '0.75rem', padding: '6px 16px', color: '#0b3b60', fontWeight: 700 }}
             >
-              Admin
+              Fill Admin Credentials (admin@ucu.ac.ug)
             </button>
           </div>
         </div>
