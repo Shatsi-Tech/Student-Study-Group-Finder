@@ -19,9 +19,14 @@ export default function NotFoundPage() {
       <p style={{ color: '#64748b', maxWidth: 420, marginTop: 8, marginBottom: 24 }}>
         The study group or resource you are looking for does not exist or may have been moved.
       </p>
-      <Link to="/dashboard" className="btn btn-primary">
-        <ArrowLeft size={16} /> Return to Dashboard
-      </Link>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Link to="/dashboard" className="btn btn-primary">
+          <ArrowLeft size={16} /> Return to Dashboard
+        </Link>
+        <Link to="/explore" className="btn btn-outline">
+          Explore Study Groups
+        </Link>
+      </div>
     </div>
   );
 }
