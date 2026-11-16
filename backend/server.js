@@ -304,6 +304,9 @@ function createNativeHttpServer() {
             if (pathname === '/api/admin/groups' && req.method === 'GET') {
                 return await runAuth(expressLikeReq, expressLikeRes, () => runAdmin(expressLikeReq, expressLikeRes, () => adminController.getAllGroups(expressLikeReq, expressLikeRes, (err) => handleError(err, expressLikeRes))));
             }
+            if (pathname === '/api/admin/reset-database' && req.method === 'POST') {
+                return await runAuth(expressLikeReq, expressLikeRes, () => runAdmin(expressLikeReq, expressLikeRes, () => adminController.resetDatabase(expressLikeReq, expressLikeRes, (err) => handleError(err, expressLikeRes))));
+            }
 
             // Serve standalone HTML frontend if requested at root or page routes
             const standaloneFrontendPath = path.join(__dirname, '..', 'frontend', 'index.html');
