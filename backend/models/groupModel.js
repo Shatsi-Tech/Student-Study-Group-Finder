@@ -11,7 +11,7 @@ const GroupModel = {
     },
 
     async getAll(filters = {}) {
-        let sql = 'SELECT * FROM study_groups WHERE status = "Active" ORDER BY created_at DESC';
+        let sql = 'SELECT * FROM study_groups ORDER BY created_at DESC';
         const [rows] = await db.query(sql);
         return rows;
     },
