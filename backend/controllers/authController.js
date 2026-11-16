@@ -78,15 +78,17 @@ async function register(req, res, next) {
         // Security: Default public registration is always STUDENT
         const [result] = await db.query(
             `INSERT INTO users (full_name, reg_number, email, password_hash, role, programme, faculty, year_of_study, is_active)
-             VALUES (?, ?, ?, ?, 'STUDENT', ?, ?, ?, 1)`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 safeTrim(full_name),
                 safeTrim(reg_number),
                 email.toLowerCase().trim(),
                 hashedPassword,
+                'STUDENT',
                 safeTrim(programme),
                 safeTrim(faculty),
-                safeTrim(year_of_study)
+                safeTrim(year_of_study),
+                1
             ]
         );
 
