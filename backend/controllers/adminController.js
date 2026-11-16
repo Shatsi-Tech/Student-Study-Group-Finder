@@ -11,7 +11,7 @@ async function getStats(req, res, next) {
     try {
         const [users] = await db.query('SELECT id, role, is_active, faculty, programme, created_at FROM users');
         const [groups] = await db.query('SELECT id, name, course_name, course_code, faculty, leader_id, status, created_at FROM study_groups');
-        const [sessions] = await db.query('SELECT id, status, study_date FROM study_sessions');
+        const [sessions] = await db.query('SELECT s.*, g.name as group_name, g.course_code, g.faculty, u.full_name as leader_name FROM study_sessions s LEFT JOIN study_groups g ON s.group_id = g.id LEFT JOIN users u ON s.created_by = u.id ORDER BY s.study_date ASC, s.start_time ASC');
         const [posts] = await db.query('SELECT id, post_type FROM posts');
         const [memberships] = await db.query('SELECT id FROM group_members WHERE status = "APPROVED"');
 
@@ -20,6 +20,7 @@ async function getStats(req, res, next) {
         const totalStudents = users.filter(u => u.role === 'STUDENT').length;
         const totalGroups = groups.length;
         const activeGroups = groups.filter(g => g.status === 'Active').length;
+        const pendingGroups = groups.filter(g => g.status === 'Pending').length;
         const totalSessions = sessions.length;
         const upcomingSessions = sessions.filter(s => s.status === 'UPCOMING').length;
         const totalPosts = posts.length;
@@ -53,6 +54,7 @@ async function getStats(req, res, next) {
         // Recent platform activities
         const recentUsers = users.slice(-5).reverse();
         const recentGroups = groups.slice(-5).reverse();
+        const upcomingSessionsList = sessions.filter(s => s.status === 'UPCOMING').slice(0, 10);
 
         return res.status(200).json({
             success: true,
@@ -61,8 +63,10 @@ async function getStats(req, res, next) {
                 totalStudents,
                 totalGroups,
                 activeGroups,
+                pendingGroups,
                 totalSessions,
                 upcomingSessions,
+                upcomingSessionsList,
                 totalPosts,
                 totalMemberships,
                 mostActiveCourses,
@@ -190,11 +194,77 @@ async function resetDatabase(req, res, next) {
     }
 }
 
+/**
+ * Update Group Status (Admin approves, rejects or sets pending)
+ */
+async function updateGroupStatus(req, res, next) {
+    try {
+        const groupId = parseInt(req.params.id, 10);
+        const { status } = req.body;
+
+        if (!['Active', 'Rejected', 'Pending'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status. Must be Active, Rejected, or Pending.' });
+        }
+
+        const [groups] = await db.query('SELECT * FROM study_groups WHERE id = ?', [groupId]);
+        if (!groups || groups.length === 0) {
+            return res.status(404).json({ success: false, message: 'Study group not found.' });
+        }
+
+        const group = groups[0];
+        await db.query('UPDATE study_groups SET status = ? WHERE id = ?', [status, groupId]);
+
+        // Notify the group leader of administrator's decision
+        const actionText = status === 'Active' ? 'approved and activated' : (status === 'Rejected' ? 'rejected' : 'updated');
+        await db.query(
+            `INSERT INTO notifications (user_id, title, message, type, is_read, link)
+             VALUES (?, ?, ?, 'SYSTEM', 0, ?)`,
+            [
+                group.leader_id,
+                `Study Group ${status === 'Active' ? 'Approved' : 'Status Update'}`,
+                `Your study group "${group.name}" has been ${actionText} by the Administrator.`,
+                `/groups/${groupId}`
+            ]
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: `Study group "${group.name}" has been ${actionText}.`,
+            status
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
+/**
+ * Get all scheduled sessions across the platform for Admin monitoring
+ */
+async function getAllSessions(req, res, next) {
+    try {
+        const [sessions] = await db.query(
+            `SELECT s.*, g.name as group_name, g.course_code, g.faculty, u.full_name as leader_name
+             FROM study_sessions s
+             LEFT JOIN study_groups g ON s.group_id = g.id
+             LEFT JOIN users u ON s.created_by = u.id
+             ORDER BY s.study_date ASC, s.start_time ASC`
+        );
+        return res.status(200).json({
+            success: true,
+            sessions
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getStats,
     getAllUsers,
     toggleUserStatus,
     deleteUser,
     getAllGroups,
+    updateGroupStatus,
+    getAllSessions,
     resetDatabase
 };
