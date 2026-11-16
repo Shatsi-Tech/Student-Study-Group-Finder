@@ -52,45 +52,48 @@ export default function LandingPage() {
       {/* Top University Header */}
       <nav style={{
         backgroundColor: '#0b3b60',
-        padding: '16px 32px',
+        padding: '14px 20px',
         display: 'flex',
+        flexWrap: 'wrap',
         justifyContent: 'space-between',
         alignItems: 'center',
+        gap: 12,
         color: '#ffffff'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
-            width: 42,
-            height: 42,
+            width: 40,
+            height: 40,
             backgroundColor: '#e09f3e',
             borderRadius: 10,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#07263f'
+            color: '#07263f',
+            flexShrink: 0
           }}>
-            <GraduationCap size={26} />
+            <GraduationCap size={24} />
           </div>
           <div>
-            <span style={{ fontWeight: 800, fontSize: '1.2rem', letterSpacing: '-0.02em', display: 'block' }}>
+            <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', display: 'block', lineHeight: 1.2 }}>
               Student Study Group Finder
             </span>
-            <span style={{ fontSize: '0.75rem', color: '#93c5fd' }}>Uganda Christian University</span>
+            <span style={{ fontSize: '0.725rem', color: '#93c5fd' }}>Uganda Christian University</span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           {isAuthenticated ? (
-            <Link to="/dashboard" className="btn btn-accent">
-              Go to Dashboard <ArrowRight size={16} />
+            <Link to="/dashboard" className="btn btn-accent btn-sm">
+              Go to Dashboard <ArrowRight size={15} />
             </Link>
           ) : (
             <>
-              <Link to="/login" className="btn btn-outline" style={{ color: '#ffffff', borderColor: 'rgba(255,255,255,0.4)' }}>
+              <Link to="/login" className="btn btn-outline btn-sm" style={{ color: '#ffffff', borderColor: 'rgba(255,255,255,0.4)' }}>
                 Student Login
               </Link>
-              <Link to="/register" className="btn btn-accent">
-                Register Account
+              <Link to="/register" className="btn btn-accent btn-sm">
+                Register
               </Link>
             </>
           )}
@@ -101,7 +104,7 @@ export default function LandingPage() {
       <section style={{
         backgroundColor: '#07263f',
         color: '#ffffff',
-        padding: '70px 24px 80px',
+        padding: '50px 16px 60px',
         textAlign: 'center',
         backgroundImage: 'radial-gradient(circle at 50% 20%, rgba(11, 59, 96, 0.8) 0%, rgba(7, 38, 63, 1) 100%)'
       }}>
@@ -112,61 +115,63 @@ export default function LandingPage() {
             gap: 8,
             backgroundColor: 'rgba(224, 159, 62, 0.15)',
             border: '1px solid rgba(224, 159, 62, 0.3)',
-            padding: '6px 16px',
+            padding: '6px 14px',
             borderRadius: 20,
-            fontSize: '0.85rem',
+            fontSize: '0.8rem',
             color: '#f6d89b',
-            marginBottom: 20
+            marginBottom: 18
           }}>
-            <Sparkles size={16} color="#e09f3e" />
+            <Sparkles size={15} color="#e09f3e" />
             Empowering Academic Excellence at Uganda Christian University
           </div>
 
-          <h1 style={{ fontSize: '2.8rem', fontWeight: 800, lineHeight: 1.15, marginBottom: 20 }}>
+          <h1 style={{ fontSize: 'clamp(1.75rem, 5vw, 2.8rem)', fontWeight: 800, lineHeight: 1.2, marginBottom: 18 }}>
             Connect, Collaborate & Excel in Your University Coursework
           </h1>
-          <p style={{ fontSize: '1.15rem', color: '#cbd5e1', lineHeight: 1.6, marginBottom: 36, maxWidth: 720, margin: '0 auto 36px' }}>
+          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.15rem)', color: '#cbd5e1', lineHeight: 1.6, marginBottom: 28, maxWidth: 720, margin: '0 auto 28px' }}>
             The official academic collaboration platform for UCU students. Discover course study groups, coordinate physical and online revision sessions, share resources, and prepare for examinations together.
           </p>
 
           {/* Search Bar */}
           <form onSubmit={handleSearchSubmit} style={{
             display: 'flex',
+            flexWrap: 'wrap',
             maxWidth: 620,
-            margin: '0 auto 24px',
+            margin: '0 auto 20px',
             backgroundColor: '#ffffff',
             borderRadius: 12,
-            padding: 6,
-            boxShadow: '0 12px 30px rgba(0,0,0,0.3)'
+            padding: 4,
+            boxShadow: '0 12px 30px rgba(0,0,0,0.3)',
+            gap: 4
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', flex: 1, padding: '0 12px' }}>
-              <Search size={20} color="#64748b" />
+            <div style={{ display: 'flex', alignItems: 'center', flex: '1 1 240px', padding: '0 12px' }}>
+              <Search size={18} color="#64748b" />
               <input
                 type="text"
-                placeholder="Search by course code (e.g. BIT3104), course name, or topic..."
+                placeholder="Search by course code, name, or topic..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{
                   width: '100%',
                   border: 'none',
-                  padding: '12px 10px',
+                  padding: '10px 8px',
                   fontSize: '0.95rem',
                   outline: 'none',
                   color: '#0f172a'
                 }}
               />
             </div>
-            <button type="submit" className="btn btn-accent" style={{ padding: '0 24px', fontSize: '0.95rem' }}>
+            <button type="submit" className="btn btn-accent" style={{ padding: '0 20px', minHeight: 40, flex: '0 0 auto' }}>
               Find Groups
             </button>
           </form>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 24, fontSize: '0.85rem', color: '#94a3b8' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 10, fontSize: '0.8rem', color: '#94a3b8' }}>
             <span>Popular: BIT3104 (Web & Mobile)</span>
             <span>•</span>
             <span>CSC2101 (Algorithms)</span>
             <span>•</span>
-            <span>LAW1201 (Constitutional Law)</span>
+            <span>LAW1201 (Law)</span>
           </div>
         </div>
       </section>
