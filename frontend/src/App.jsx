@@ -45,9 +45,12 @@ export default function App() {
             >
               <Route path="/dashboard" element={<StudentDashboard />} />
               <Route path="/explore" element={<ExploreGroupsPage />} />
+              <Route path="/groups" element={<Navigate to="/explore" replace />} />
               <Route path="/create-group" element={<CreateGroupPage />} />
               <Route path="/groups/:id" element={<GroupDetailsPage />} />
+              <Route path="/group/:id" element={<GroupDetailsPage />} />
               <Route path="/sessions" element={<StudySessionsPage />} />
+              <Route path="/study-sessions" element={<Navigate to="/sessions" replace />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route
                 path="/admin"
@@ -58,6 +61,9 @@ export default function App() {
                 }
               />
             </Route>
+
+            {/* Friendly aliases */}
+            <Route path="/home" element={<Navigate to="/" replace />} />
 
             {/* 404 Fallback */}
             <Route path="*" element={<NotFoundPage />} />
