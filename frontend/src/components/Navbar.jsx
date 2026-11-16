@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { notificationService } from '../services/notificationService';
-import { Bell, User, LogOut, BookOpen, Shield, ChevronDown } from 'lucide-react';
+import { Bell, User, LogOut, BookOpen, Shield, ChevronDown, Menu } from 'lucide-react';
 
-export default function Navbar() {
+export default function Navbar({ onToggleMobileMenu }) {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
@@ -41,11 +41,22 @@ export default function Navbar() {
 
   return (
     <header className="top-navbar">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Mobile Hamburger Drawer Toggle */}
+        {isAuthenticated && onToggleMobileMenu && (
+          <button
+            onClick={onToggleMobileMenu}
+            className="navbar-mobile-toggle"
+            aria-label="Open navigation menu"
+          >
+            <Menu size={22} />
+          </button>
+        )}
+
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <div style={{
-            width: 38,
-            height: 38,
+            width: 36,
+            height: 36,
             borderRadius: 8,
             backgroundColor: '#0b3b60',
             color: '#e09f3e',
@@ -53,26 +64,29 @@ export default function Navbar() {
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: 'bold',
-            fontSize: '1.2rem'
+            flexShrink: 0
           }}>
-            <BookOpen size={22} />
+            <BookOpen size={20} />
           </div>
           <div>
-            <span style={{ fontWeight: 700, fontSize: '1.05rem', color: '#0b3b60', display: 'block', lineHeight: 1.2 }}>
+            <span className="navbar-brand-title">
               UCU Study Groups
             </span>
-            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Uganda Christian University</span>
+            <span className="navbar-brand-sub">Uganda Christian University</span>
           </div>
         </Link>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {isAuthenticated ? (
           <>
             {/* Notifications Menu */}
             <div style={{ position: 'relative' }}>
               <button
-                onClick={() => setShowNotifs(!showNotifs)}
+                onClick={() => {
+                  setShowNotifs(!showNotifs);
+                  if (showProfileMenu) setShowProfileMenu(false);
+                }}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -80,8 +94,12 @@ export default function Navbar() {
                   position: 'relative',
                   padding: 8,
                   borderRadius: '50%',
-                  color: '#475569'
+                  color: '#475569',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
+                aria-label="Notifications"
               >
                 <Bell size={20} />
                 {unreadCount > 0 && (
@@ -110,31 +128,31 @@ export default function Navbar() {
                   position: 'absolute',
                   right: 0,
                   top: 45,
-                  width: 320,
+                  width: 'min(320px, calc(100vw - 32px))',
                   backgroundColor: '#ffffff',
-                  borderRadius: 8,
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                  borderRadius: 10,
+                  boxShadow: '0 12px 30px rgba(0,0,0,0.18)',
                   border: '1px solid #e2e8f0',
-                  zIndex: 50,
+                  zIndex: 60,
                   overflow: 'hidden'
                 }}>
-                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>Notifications</span>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8fafc' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#0b3b60' }}>Notifications</span>
                     {unreadCount > 0 && (
-                      <button onClick={markAllRead} style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: '0.75rem', cursor: 'pointer' }}>
+                      <button onClick={markAllRead} style={{ background: 'none', border: 'none', color: '#0284c7', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}>
                         Mark all read
                       </button>
                     )}
                   </div>
                   <div style={{ maxHeight: 280, overflowY: 'auto' }}>
                     {notifications.length === 0 ? (
-                      <div style={{ padding: 20, textAlign: 'center', color: '#94a3b8', fontSize: '0.875rem' }}>
+                      <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
                         No notifications yet
                       </div>
                     ) : (
                       notifications.map(n => (
                         <div key={n.id} style={{
-                          padding: '10px 16px',
+                          padding: '10px 14px',
                           borderBottom: '1px solid #f1f5f9',
                           backgroundColor: n.is_read ? '#ffffff' : '#f0f9ff'
                         }}>
@@ -151,14 +169,17 @@ export default function Navbar() {
             {/* User Dropdown */}
             <div style={{ position: 'relative' }}>
               <button
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                onClick={() => {
+                  setShowProfileMenu(!showProfileMenu);
+                  if (showNotifs) setShowNotifs(false);
+                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
                   background: 'none',
                   border: '1px solid #e2e8f0',
-                  padding: '6px 12px',
+                  padding: '5px 10px',
                   borderRadius: 20,
                   cursor: 'pointer'
                 }}
@@ -173,11 +194,12 @@ export default function Navbar() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '0.8rem',
-                  fontWeight: 600
+                  fontWeight: 600,
+                  flexShrink: 0
                 }}>
                   {user?.full_name ? user.full_name[0] : 'U'}
                 </div>
-                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0f172a' }}>
+                <span className="navbar-user-name" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#0f172a' }}>
                   {user?.full_name?.split(' ')[0]}
                 </span>
                 {isAdmin && (
@@ -191,17 +213,18 @@ export default function Navbar() {
                   position: 'absolute',
                   right: 0,
                   top: 45,
-                  width: 200,
+                  width: 'min(210px, calc(100vw - 32px))',
                   backgroundColor: '#ffffff',
-                  borderRadius: 8,
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                  borderRadius: 10,
+                  boxShadow: '0 12px 30px rgba(0,0,0,0.18)',
                   border: '1px solid #e2e8f0',
-                  zIndex: 50,
-                  padding: '6px 0'
+                  zIndex: 60,
+                  padding: '6px 0',
+                  overflow: 'hidden'
                 }}>
-                  <div style={{ padding: '8px 16px', borderBottom: '1px solid #e2e8f0', fontSize: '0.75rem', color: '#64748b' }}>
+                  <div style={{ padding: '10px 14px', borderBottom: '1px solid #e2e8f0', fontSize: '0.75rem', color: '#64748b', backgroundColor: '#f8fafc' }}>
                     Signed in as<br />
-                    <strong style={{ color: '#0f172a', fontSize: '0.8rem' }}>{user?.email}</strong>
+                    <strong style={{ color: '#0f172a', fontSize: '0.8rem', wordBreak: 'break-all' }}>{user?.email}</strong>
                   </div>
                   <Link
                     to="/profile"
@@ -210,7 +233,7 @@ export default function Navbar() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 8,
-                      padding: '10px 16px',
+                      padding: '10px 14px',
                       color: '#0f172a',
                       fontSize: '0.875rem',
                       textDecoration: 'none'
@@ -226,7 +249,7 @@ export default function Navbar() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 8,
-                        padding: '10px 16px',
+                        padding: '10px 14px',
                         color: '#0b3b60',
                         fontSize: '0.875rem',
                         fontWeight: 600,
@@ -243,13 +266,14 @@ export default function Navbar() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 8,
-                      padding: '10px 16px',
+                      padding: '10px 14px',
                       color: '#ef4444',
                       fontSize: '0.875rem',
                       border: 'none',
                       background: 'none',
                       cursor: 'pointer',
-                      textAlign: 'left'
+                      textAlign: 'left',
+                      borderTop: '1px solid #f1f5f9'
                     }}
                   >
                     <LogOut size={16} /> Sign Out
@@ -259,7 +283,7 @@ export default function Navbar() {
             </div>
           </>
         ) : (
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             <Link to="/login" className="btn btn-outline btn-sm">Log In</Link>
             <Link to="/register" className="btn btn-primary btn-sm">Register</Link>
           </div>
