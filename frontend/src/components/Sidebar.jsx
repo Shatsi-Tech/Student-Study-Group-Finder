@@ -9,15 +9,17 @@ import {
   User,
   ShieldAlert,
   LogOut,
-  GraduationCap
+  GraduationCap,
+  X
 } from 'lucide-react';
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
+    if (onClose) onClose();
     navigate('/login');
   };
 
@@ -33,37 +35,54 @@ export default function Sidebar() {
     navItems.push({ name: 'Admin Dashboard', path: '/admin', icon: ShieldAlert });
   }
 
+  const handleLinkClick = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
       {/* Brand Header */}
       <div style={{
-        padding: '24px 20px',
+        padding: '20px',
         borderBottom: '1px solid rgba(255,255,255,0.1)',
         display: 'flex',
         alignItems: 'center',
-        gap: 12
+        justifyContent: 'space-between'
       }}>
-        <div style={{
-          width: 40,
-          height: 40,
-          borderRadius: 10,
-          backgroundColor: '#e09f3e',
-          color: '#07263f',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 'bold'
-        }}>
-          <GraduationCap size={24} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 38,
+            height: 38,
+            borderRadius: 10,
+            backgroundColor: '#e09f3e',
+            color: '#07263f',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 'bold'
+          }}>
+            <GraduationCap size={22} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ffffff' }}>UCU Study Hub</div>
+            <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Mukono Main Campus</div>
+          </div>
         </div>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>UCU Study Hub</div>
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Mukono Main Campus</div>
-        </div>
+
+        {/* Mobile Close Button */}
+        <button
+          onClick={onClose}
+          className="sidebar-close-btn"
+          aria-label="Close navigation menu"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       {/* Navigation Links */}
-      <nav style={{ padding: '20px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <nav style={{ padding: '16px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6, overflowY: 'auto' }}>
         <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', padding: '0 12px 8px', letterSpacing: '0.05em' }}>
           MAIN MENU
         </div>
@@ -73,11 +92,12 @@ export default function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={handleLinkClick}
               style={({ isActive }) => ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: 12,
-                padding: '10px 14px',
+                padding: '11px 14px',
                 borderRadius: 8,
                 fontSize: '0.875rem',
                 fontWeight: 500,
@@ -97,7 +117,7 @@ export default function Sidebar() {
 
       {/* User Footer Profile */}
       <div style={{
-        padding: '16px 20px',
+        padding: '16px 18px',
         borderTop: '1px solid rgba(255,255,255,0.1)',
         backgroundColor: 'rgba(0,0,0,0.2)'
       }}>
@@ -137,7 +157,7 @@ export default function Sidebar() {
                 textOverflow: 'ellipsis',
                 overflow: 'hidden'
               }}>
-                {user?.reg_number}
+                {user?.reg_number || (isAdmin ? 'SYSTEM ADMIN' : '')}
               </div>
             </div>
           </div>
@@ -150,7 +170,10 @@ export default function Sidebar() {
               color: '#ef4444',
               cursor: 'pointer',
               padding: 6,
-              borderRadius: 6
+              borderRadius: 6,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
             <LogOut size={18} />
