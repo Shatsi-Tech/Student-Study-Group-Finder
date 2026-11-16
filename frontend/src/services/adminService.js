@@ -26,6 +26,16 @@ export const adminService = {
     return response.data;
   },
 
+  async updateGroupStatus(groupId, status) {
+    const response = await api.put(`/admin/groups/${groupId}/status`, { status });
+    return response.data;
+  },
+
+  async getAllSessions() {
+    const response = await api.get('/admin/sessions');
+    return response.data;
+  },
+
   async resetDatabase() {
     const response = await api.post('/admin/reset-database');
     return response.data;
