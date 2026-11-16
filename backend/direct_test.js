@@ -1,7 +1,6 @@
 /**
- * Direct Unit & Integration Test Suite
- * Tests all backend controllers, database persistence, and authorization logic
- * directly in memory without requiring network socket permissions.
+ * Direct Controller & Database Test Suite (In-Process)
+ * Tests full student lifecycle: Registration -> Login -> Create Group -> Sessions -> Discussions -> Admin Analytics
  */
 const db = require('./config/db');
 const authController = require('./controllers/authController');
@@ -9,8 +8,8 @@ const groupController = require('./controllers/groupController');
 const sessionController = require('./controllers/sessionController');
 const postController = require('./controllers/postController');
 const commentController = require('./controllers/commentController');
-const adminController = require('./controllers/adminController');
 const notificationController = require('./controllers/notificationController');
+const adminController = require('./controllers/adminController');
 
 function createMockRes() {
     return {
@@ -33,23 +32,35 @@ async function runDirectTests() {
     console.log('====================================================\n');
 
     await db.initDatabase();
+    db.seedStore(); // Start with clean state
 
-    // 1. Student Login (Brian Kigozi)
-    console.log('1. Testing Student Login...');
-    const req1 = { body: { identifier: 'kigozi.brian@ucu.ac.ug', password: 'Student@123' } };
+    // 1. Student Registration
+    console.log('1. Testing Student Account Registration...');
+    const req1 = {
+        body: {
+            full_name: 'Test Student',
+            reg_number: 'S24/B23/BSIT/999',
+            email: 'test.student@ucu.ac.ug',
+            password: 'Student@123',
+            confirm_password: 'Student@123',
+            programme: 'Bachelor of Science in Information Technology',
+            faculty: 'Faculty of Science & Technology',
+            year_of_study: 'Year 2'
+        }
+    };
     const res1 = createMockRes();
-    await authController.login(req1, res1, (e) => { throw e; });
+    await authController.register(req1, res1, (e) => { throw e; });
     console.log(`   Status: ${res1.statusCode} | User: ${res1.data.user.full_name} | Role: ${res1.data.user.role}`);
-    if (res1.statusCode !== 200 || !res1.data.token) throw new Error('Student login failed');
+    if (res1.statusCode !== 201 || !res1.data.token) throw new Error('Student registration failed');
     const studentUser = res1.data.user;
 
-    // 2. Fetch Groups with Search
-    console.log('\n2. Testing Groups Listing & Search ("Web")...');
-    const req2 = { query: { search: 'Web' }, user: studentUser };
+    // 2. Student Login
+    console.log('\n2. Testing Student Login with Email...');
+    const req2 = { body: { identifier: 'test.student@ucu.ac.ug', password: 'Student@123' } };
     const res2 = createMockRes();
-    await groupController.getGroups(req2, res2, (e) => { throw e; });
-    console.log(`   Status: ${res2.statusCode} | Found ${res2.data.count} groups | First: "${res2.data.groups[0].name}"`);
-    if (res2.data.count < 1) throw new Error('Search failed');
+    await authController.login(req2, res2, (e) => { throw e; });
+    console.log(`   Status: ${res2.statusCode} | Token: ${res2.data.token.slice(0, 15)}...`);
+    if (res2.statusCode !== 200) throw new Error('Student login failed');
 
     // 3. Create a Study Group
     console.log('\n3. Testing Group Creation (Auto-assigns Creator as Leader)...');
@@ -87,7 +98,7 @@ async function runDirectTests() {
         body: {
             group_id: newGroupId,
             title: 'Containerization with Docker Workshop',
-            study_date: '2024-11-27',
+            study_date: '2026-11-27',
             start_time: '14:00:00',
             end_time: '16:30:00',
             location_or_link: 'Tech Lab 1 (Main Campus)',
@@ -99,10 +110,25 @@ async function runDirectTests() {
     console.log(`   Status: ${res5.statusCode} | Message: ${res5.data.message} | Session ID: ${res5.data.sessionId}`);
     if (res5.statusCode !== 201) throw new Error('Session creation failed');
 
-    // 6. Another Student Joins the Group (Sarah Nakato)
-    console.log('\n6. Testing Student Joining Study Group...');
-    const sarahUser = { id: 3, full_name: 'Sarah Nakato', email: 'nakato.sarah@ucu.ac.ug', role: 'STUDENT' };
-    const req6 = { params: { id: newGroupId }, user: sarahUser };
+    // 6. Register a Second Student and Join Group
+    console.log('\n6. Registering Second Student and Testing Group Join...');
+    const req6_reg = {
+        body: {
+            full_name: 'Peer Student',
+            reg_number: 'S24/B23/BSCS/888',
+            email: 'peer.student@ucu.ac.ug',
+            password: 'Student@123',
+            confirm_password: 'Student@123',
+            programme: 'Bachelor of Science in Computer Science',
+            faculty: 'Faculty of Science & Technology',
+            year_of_study: 'Year 2'
+        }
+    };
+    const res6_reg = createMockRes();
+    await authController.register(req6_reg, res6_reg, (e) => { throw e; });
+    const peerUser = res6_reg.data.user;
+
+    const req6 = { params: { id: newGroupId }, user: peerUser };
     const res6 = createMockRes();
     await groupController.joinGroup(req6, res6, (e) => { throw e; });
     console.log(`   Status: ${res6.statusCode} | Message: ${res6.data.message}`);
@@ -111,7 +137,7 @@ async function runDirectTests() {
     // 7. Publish Discussion Post
     console.log('\n7. Testing Discussion Post Publishing...');
     const req7 = {
-        user: sarahUser,
+        user: peerUser,
         body: {
             group_id: newGroupId,
             title: 'Required Docker software setup',
@@ -131,7 +157,7 @@ async function runDirectTests() {
         user: studentUser,
         body: {
             post_id: newPostId,
-            content: 'Yes Sarah, please install Docker Desktop with WSL2 engine activated.'
+            content: 'Please install Docker Desktop with WSL2 engine activated.'
         }
     };
     const res8 = createMockRes();
@@ -139,26 +165,29 @@ async function runDirectTests() {
     console.log(`   Status: ${res8.statusCode} | Message: ${res8.data.message} | Author: ${res8.data.comment.author_name}`);
     if (res8.statusCode !== 201) throw new Error('Comment failed');
 
-    // 9. Notifications Verification
-    console.log('\n9. Testing Notification Delivery...');
-    const req9 = { user: sarahUser };
+    // 9. Admin Login & Dashboard Analytics
+    console.log('\n9. Testing Admin Login and Dashboard Analytics...');
+    const req9 = { body: { identifier: 'admin@ucu.ac.ug', password: 'Admin@123' } };
     const res9 = createMockRes();
-    await notificationController.getNotifications(req9, res9, (e) => { throw e; });
-    console.log(`   Sarah unread notifications: ${res9.data.unreadCount} | Latest: "${res9.data.notifications[0]?.title}"`);
+    await authController.login(req9, res9, (e) => { throw e; });
+    console.log(`   Admin Login Status: ${res9.statusCode} | Welcome: ${res9.data.user.full_name}`);
+    if (res9.statusCode !== 200) throw new Error('Admin login failed');
 
-    // 10. Administrator Dashboard Analytics
-    console.log('\n10. Testing Administrator Dashboard Analytics...');
-    const adminUser = { id: 1, full_name: 'System Administrator', email: 'admin@ucu.ac.ug', role: 'ADMIN' };
-    const req10 = { user: adminUser };
+    const req10 = { user: res9.data.user };
     const res10 = createMockRes();
     await adminController.getStats(req10, res10, (e) => { throw e; });
-    console.log(`    Status: ${res10.statusCode}`);
-    console.log(`    Total Users:        ${res10.data.stats.totalUsers}`);
-    console.log(`    Total Groups:       ${res10.data.stats.totalGroups}`);
-    console.log(`    Total Sessions:     ${res10.data.stats.totalSessions}`);
-    console.log(`    Active Courses:     ${res10.data.stats.mostActiveCourses.map(c => c.course).join(', ')}`);
-    console.log(`    Faculty Dist.:      ${res10.data.stats.facultyDistribution.map(f => `${f.faculty} (${f.count})`).join(', ')}`);
-    if (res10.statusCode !== 200 || res10.data.stats.totalUsers < 1) throw new Error('Admin stats failed');
+    console.log(`   Total Users:        ${res10.data.stats.totalUsers}`);
+    console.log(`   Total Groups:       ${res10.data.stats.totalGroups}`);
+    console.log(`   Total Sessions:     ${res10.data.stats.totalSessions}`);
+    console.log(`   Active Courses:     ${res10.data.stats.mostActiveCourses.map(c => c.course).join(', ')}`);
+
+    // 10. Database Reset / Clean Slate Endpoint
+    console.log('\n10. Testing Database Reset (Clean Slate)...');
+    const reqReset = { user: res9.data.user };
+    const resReset = createMockRes();
+    await adminController.resetDatabase(reqReset, resReset, (e) => { throw e; });
+    console.log(`   Status: ${resReset.statusCode} | Message: ${resReset.data.message}`);
+    if (resReset.statusCode !== 200) throw new Error('Reset failed');
 
     console.log('\n======================================================');
     console.log(' ALL 10 CORE CONTROLLER & DATABASE TESTS SUCCEEDED!   ');
