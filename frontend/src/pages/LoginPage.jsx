@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { Eye, EyeOff, Lock, Mail, GraduationCap, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
+import ucuLogo from '../assets/ucu-logo.jpg';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -71,19 +72,16 @@ export default function LoginPage() {
       }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{
-            width: 48,
-            height: 48,
-            borderRadius: 12,
-            backgroundColor: '#0b3b60',
-            color: '#e09f3e',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 12px'
-          }}>
-            <GraduationCap size={28} />
-          </div>
+          <img
+            src={ucuLogo}
+            alt="Uganda Christian University Crest"
+            style={{
+              width: 76,
+              height: 'auto',
+              margin: '0 auto 12px',
+              display: 'block'
+            }}
+          />
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0b3b60' }}>
             Student Study Group Finder
           </h2>
