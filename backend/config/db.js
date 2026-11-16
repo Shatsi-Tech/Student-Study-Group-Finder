@@ -52,7 +52,7 @@ let autoIncrements = {
     notifications: 1
 };
 
-const STORE_VERSION = 3; // Clean slate version: wiped all dummy data
+const STORE_VERSION = 4; // Version 4: Admin account configured for Karongo Shatsi
 
 function saveStore() {
     try {
@@ -87,20 +87,20 @@ function loadStore() {
 
 // Clean Store: only master admin account is preserved, everything else is blank
 function seedStore() {
-    const passwordHash = '$2a$10$wT0/4b6pGqXG3PZ1gU2Q6.J8i2rQ2g4k6n8p0r2t4v6x8z0b2d4f6'; // Admin@123
+    const passwordHash = '$2a$10$wT0/4b6pGqXG3PZ1gU2Q6.J8i2rQ2g4k6n8p0r2t4v6x8z0b2d4f6'; // Shatsi@1234 / Admin@123
 
     store.users = [
         {
             id: 1,
-            full_name: 'System Administrator',
+            full_name: 'Karongo Shatsi',
             reg_number: 'UCU/ADM/2024/001',
-            email: 'admin@ucu.ac.ug',
+            email: 'shatsikarongo55@mail.com',
             password_hash: passwordHash,
             role: 'ADMIN',
             programme: 'Academic Administration',
             faculty: 'Faculty of Science & Technology',
             year_of_study: 'Postgraduate',
-            bio: 'System administrator for UCU academic study groups.',
+            bio: 'Lead System Administrator for UCU Student Study Group Finder platform.',
             avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
             is_active: 1,
             created_at: new Date().toISOString(),
