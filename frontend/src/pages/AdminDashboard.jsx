@@ -67,6 +67,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleResetDatabase = async () => {
+    if (!window.confirm('⚠️ WARNING: This will remove all student accounts, groups, sessions, and posts, resetting the platform to a clean slate. Only the administrator account will remain. Are you sure?')) return;
+    try {
+      setLoading(true);
+      const res = await adminService.resetDatabase();
+      showSuccess(res.message);
+      await loadAdminData();
+    } catch (err) {
+      showError(err.response?.data?.message || 'Failed to reset database.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading || !stats) {
     return <LoadingSpinner text="Compiling university platform analytics..." />;
   }
@@ -94,6 +108,14 @@ export default function AdminDashboard() {
             Uganda Christian University Study Group Finder Management
           </p>
         </div>
+
+        <button
+          onClick={handleResetDatabase}
+          className="btn btn-outline"
+          style={{ borderColor: '#ef4444', color: '#fca5a5', fontSize: '0.8rem', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <Trash2 size={16} /> Reset Database (Clean Slate)
+        </button>
       </div>
 
       {/* Metrics Row */}
