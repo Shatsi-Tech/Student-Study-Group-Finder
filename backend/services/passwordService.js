@@ -16,7 +16,8 @@ const SALT_ROUNDS = 10;
 // Known development hashes for seed accounts
 const KNOWN_DEV_PASSWORDS = {
     'Admin@123': true,
-    'Student@123': true
+    'Student@123': true,
+    'Shatsi@1234': true
 };
 
 async function hashPassword(plainTextPassword) {
