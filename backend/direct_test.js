@@ -167,11 +167,11 @@ async function runDirectTests() {
 
     // 9. Admin Login & Dashboard Analytics
     console.log('\n9. Testing Admin Login and Dashboard Analytics...');
-    const req9 = { body: { identifier: 'admin@ucu.ac.ug', password: 'Admin@123' } };
+    const req9 = { body: { identifier: 'shatsikarongo55@mail.com', password: 'Shatsi@1234' } };
     const res9 = createMockRes();
     await authController.login(req9, res9, (e) => { throw e; });
     console.log(`   Admin Login Status: ${res9.statusCode} | Welcome: ${res9.data.user.full_name}`);
-    if (res9.statusCode !== 200) throw new Error('Admin login failed');
+    if (res9.statusCode !== 200 || res9.data.user.full_name !== 'Karongo Shatsi') throw new Error('Admin login failed');
 
     const req10 = { user: res9.data.user };
     const res10 = createMockRes();
