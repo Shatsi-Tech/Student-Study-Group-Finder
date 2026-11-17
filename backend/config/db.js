@@ -379,6 +379,34 @@ function executeStoreQuery(sql, params = []) {
         const table = tableMatch ? tableMatch[1].toLowerCase() : null;
 
         if (table && store[table]) {
+            // Special handling for notifications bulk update
+            if (table === 'notifications' && /WHERE\s+user_id\s*=\s*\?/i.test(sql) && !/id\s*=\s*\?/i.test(sql)) {
+                const userId = parseInt(params[params.length - 1], 10);
+                let count = 0;
+                store.notifications.forEach(n => {
+                    if (parseInt(n.user_id, 10) === userId) {
+                        n.is_read = 1;
+                        n.updated_at = new Date().toISOString();
+                        count++;
+                    }
+                });
+                saveStore();
+                return [{ affectedRows: count }, []];
+            }
+
+            // Special handling for single notification update by id
+            if (table === 'notifications' && /id\s*=\s*\?/i.test(sql)) {
+                const notifId = parseInt(params[0], 10);
+                const target = store.notifications.find(n => n.id === notifId);
+                if (target) {
+                    target.is_read = 1;
+                    target.updated_at = new Date().toISOString();
+                    saveStore();
+                    return [{ affectedRows: 1 }, []];
+                }
+                return [{ affectedRows: 0 }, []];
+            }
+
             // Find target record by ID if WHERE id = ?
             const idParam = params[params.length - 1];
             const target = store[table].find(r => r.id === parseInt(idParam, 10));
@@ -508,11 +536,22 @@ function filterComments(list, sql, params) {
 }
 
 function filterNotifications(list, sql, params) {
+    let filtered = list;
     if (/user_id\s*=\s*\?/i.test(sql)) {
         const userId = parseInt(params[0], 10);
-        return list.filter(n => n.user_id === userId);
+        filtered = filtered.filter(n => parseInt(n.user_id, 10) === userId);
     }
-    return list;
+    if (/is_read\s*=\s*0/i.test(sql)) {
+        filtered = filtered.filter(n => !n.is_read || n.is_read === 0);
+    }
+    if (/is_read\s*=\s*1/i.test(sql)) {
+        filtered = filtered.filter(n => n.is_read === 1 || n.is_read === true);
+    }
+    if (/id\s*=\s*\?/i.test(sql)) {
+        const id = parseInt(params[0], 10);
+        filtered = filtered.filter(n => n.id === id);
+    }
+    return filtered;
 }
 
 module.exports = {
