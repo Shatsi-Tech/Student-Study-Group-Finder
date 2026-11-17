@@ -3,6 +3,7 @@
  * Scheduling, listing, and managing academic study sessions for groups.
  */
 const db = require('../config/db');
+const { notifyUser, notifyAllUsers, notifyGroupMembers, notifyAdmins } = require('../services/notifyService');
 
 /**
  * Schedule a new study session (Group Leader or Admin)
@@ -51,22 +52,23 @@ async function createSession(req, res, next) {
         const newSessionId = result.insertId;
 
         // Broadcast notification to all approved group members
-        const [members] = await db.query(
-            'SELECT user_id FROM group_members WHERE group_id = ? AND status = "APPROVED" AND user_id != ?',
-            [groupId, req.user.id]
+        await notifyGroupMembers(
+            groupId,
+            `New Study Session: ${title.trim()}`,
+            `Session scheduled in ${group.name} on ${study_date} at ${start_time} (${location_or_link.trim()}).`,
+            'SESSION',
+            '/sessions',
+            req.user.id
         );
 
-        for (const member of members) {
-            await db.query(
-                `INSERT INTO notifications (user_id, title, message, type, is_read, link)
-                 VALUES (?, 'New Study Session Scheduled', ?, 'SESSION', 0, ?)`,
-                [
-                    member.user_id,
-                    `Session "${title.trim()}" in ${group.name} on ${study_date} at ${start_time}.`,
-                    `/groups/${groupId}`
-                ]
-            );
-        }
+        // Notify session creator
+        await notifyUser(
+            req.user.id,
+            'Study Session Scheduled',
+            `Your session "${title.trim()}" in ${group.name} has been scheduled for ${study_date}.`,
+            'SUCCESS',
+            '/sessions'
+        );
 
         return res.status(201).json({
             success: true,
@@ -184,6 +186,16 @@ async function updateSessionStatus(req, res, next) {
         }
 
         await db.query('UPDATE study_sessions SET status = ? WHERE id = ?', [status, sessionId]);
+
+        // Notify group members of session status change
+        await notifyGroupMembers(
+            sessions[0].group_id,
+            `Session Status: ${status}`,
+            `The study session "${sessions[0].title}" has been marked as ${status}.`,
+            'SESSION',
+            '/sessions',
+            req.user.id
+        );
 
         return res.status(200).json({
             success: true,
