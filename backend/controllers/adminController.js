@@ -3,6 +3,7 @@
  * Real-time statistics, platform analytics, student and group moderation.
  */
 const db = require('../config/db');
+const { notifyUser, notifyAllUsers, notifyGroupMembers, notifyAdmins } = require('../services/notifyService');
 
 /**
  * Get Platform Dashboard Statistics
@@ -216,16 +217,24 @@ async function updateGroupStatus(req, res, next) {
 
         // Notify the group leader of administrator's decision
         const actionText = status === 'Active' ? 'approved and activated' : (status === 'Rejected' ? 'rejected' : 'updated');
-        await db.query(
-            `INSERT INTO notifications (user_id, title, message, type, is_read, link)
-             VALUES (?, ?, ?, 'SYSTEM', 0, ?)`,
-            [
-                group.leader_id,
-                `Study Group ${status === 'Active' ? 'Approved' : 'Status Update'}`,
-                `Your study group "${group.name}" has been ${actionText} by the Administrator.`,
-                `/groups/${groupId}`
-            ]
+        await notifyUser(
+            group.leader_id,
+            `Study Group ${status === 'Active' ? 'Approved' : 'Status Update'}`,
+            `Your study group "${group.name}" has been ${actionText} by the Administrator.`,
+            status === 'Active' ? 'SUCCESS' : 'WARNING',
+            `/groups/${groupId}`
         );
+
+        // When approved, broadcast notification to ALL members in the university system
+        if (status === 'Active') {
+            await notifyAllUsers(
+                `Study Group Now Active: ${group.name}`,
+                `${group.course_code} - "${group.name}" is now approved by the Administrator and open for students to join!`,
+                'ANNOUNCEMENT',
+                `/groups/${groupId}`,
+                group.leader_id
+            );
+        }
 
         return res.status(200).json({
             success: true,
