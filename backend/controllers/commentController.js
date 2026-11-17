@@ -2,6 +2,7 @@
  * Post Comments Controller
  */
 const db = require('../config/db');
+const { notifyUser, notifyGroupMembers } = require('../services/notifyService');
 
 /**
  * Add a comment to a post
@@ -53,16 +54,24 @@ async function createComment(req, res, next) {
 
         // Notify post author if not the commenter
         if (post.user_id !== userId) {
-            await db.query(
-                `INSERT INTO notifications (user_id, title, message, type, is_read, link)
-                 VALUES (?, 'New Comment on Your Post', ?, 'COMMENT', 0, ?)`,
-                [
-                    post.user_id,
-                    `${req.user.full_name} commented on "${post.title}" in ${post.group_name}.`,
-                    `/groups/${post.group_id}`
-                ]
+            await notifyUser(
+                post.user_id,
+                'New Comment on Your Post',
+                `${req.user.full_name || 'A student'} commented on "${post.title}" in ${post.group_name}.`,
+                'COMMENT',
+                `/groups/${post.group_id}`
             );
         }
+
+        // Notify other group members
+        await notifyGroupMembers(
+            post.group_id,
+            `New Comment in ${post.group_name}`,
+            `${req.user.full_name || 'A student'} commented on "${post.title}".`,
+            'COMMENT',
+            `/groups/${post.group_id}`,
+            userId
+        );
 
         // Fetch new comment with author details
         const [newComment] = await db.query(
