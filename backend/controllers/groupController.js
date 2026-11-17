@@ -4,6 +4,7 @@
  * membership management (joining, leaving, member lists, removal).
  */
 const db = require('../config/db');
+const { notifyUser, notifyAllUsers, notifyGroupMembers, notifyAdmins } = require('../services/notifyService');
 
 /**
  * Create a new study group
@@ -77,23 +78,39 @@ async function createGroup(req, res, next) {
         );
 
         // 5. Create confirmation notification for leader
-        await db.query(
-            `INSERT INTO notifications (user_id, title, message, type, is_read, link)
-             VALUES (?, 'Study Group Created (Pending Admin Review)', ?, 'SYSTEM', 0, ?)`,
-            [leaderId, `Your study group "${name.trim()}" has been submitted and is pending administrator approval.`, `/groups/${newGroupId}`]
+        await notifyUser(
+            leaderId,
+            'Study Group Created (Pending Admin Review)',
+            `Your study group "${name.trim()}" has been submitted and is pending administrator approval.`,
+            'SYSTEM',
+            `/groups/${newGroupId}`
         );
 
         // 6. Notify Administrators of new group submission
-        const [admins] = await db.query('SELECT id FROM users WHERE role = "ADMIN"');
-        if (admins && admins.length > 0) {
-            for (const admin of admins) {
-                await db.query(
-                    `INSERT INTO notifications (user_id, title, message, type, is_read, link)
-                     VALUES (?, 'New Study Group Awaiting Approval', ?, 'ADMIN', 0, '/admin')`,
-                    [admin.id, `New group "${name.trim()}" (${course_code.trim().toUpperCase()}) created. Please review and approve or reject it.`]
-                );
-            }
-        }
+        await notifyAdmins(
+            'New Study Group Awaiting Approval',
+            `${req.user.full_name || 'A student'} created "${name.trim()}" (${course_code.trim().toUpperCase()}). Please review and approve or reject it.`,
+            'ADMIN',
+            '/admin'
+        );
+
+        // 7. Broadcast notification to ALL students/members in the system so everyone is notified
+        await notifyAllUsers(
+            `New Study Group Available: ${name.trim()}`,
+            `${req.user.full_name || 'A student'} has started a study group for ${course_code.trim().toUpperCase()} (${course_name.trim()}). Explore and join!`,
+            'GROUP',
+            `/groups/${newGroupId}`,
+            leaderId
+        );
+
+        // 8. Broadcast notification for the scheduled inaugural session
+        await notifyAllUsers(
+            `New Study Session Scheduled: ${name.trim()}`,
+            `Inaugural revision & orientation session scheduled for ${sessionDate} (14:00 - 16:00) in ${name.trim()}.`,
+            'SESSION',
+            '/sessions',
+            leaderId
+        );
 
         return res.status(201).json({
             success: true,
@@ -335,14 +352,24 @@ async function joinGroup(req, res, next) {
             [groupId, userId]
         );
 
-        // Notify Group Leader
-        if (group.leader_id !== userId) {
-            await db.query(
-                `INSERT INTO notifications (user_id, title, message, type, is_read, link)
-                 VALUES (?, 'New Member Joined', ?, 'MEMBER', 0, ?)`,
-                [group.leader_id, `${req.user.full_name} has joined "${group.name}".`, `/groups/${groupId}`]
-            );
-        }
+        // Notify the student who joined
+        await notifyUser(
+            userId,
+            `Joined ${group.name}`,
+            `You are now an active member of "${group.name}" (${group.course_code}). Start participating in discussions and sessions!`,
+            'SUCCESS',
+            `/groups/${groupId}`
+        );
+
+        // Notify all other members of the group
+        await notifyGroupMembers(
+            groupId,
+            `New Member in ${group.name}`,
+            `${req.user.full_name || 'A student'} has joined the study group.`,
+            'MEMBER',
+            `/groups/${groupId}`,
+            userId
+        );
 
         return res.status(200).json({
             success: true,
@@ -374,6 +401,15 @@ async function leaveGroup(req, res, next) {
         }
 
         await db.query('DELETE FROM group_members WHERE group_id = ? AND user_id = ?', [groupId, userId]);
+
+        // Notify Group Leader
+        await notifyUser(
+            groups[0].leader_id,
+            `Member Left ${groups[0].name}`,
+            `${req.user.full_name || 'A student'} has left your study group.`,
+            'MEMBER',
+            `/groups/${groupId}`
+        );
 
         return res.status(200).json({
             success: true,
