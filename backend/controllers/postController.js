@@ -2,6 +2,7 @@
  * Group Posts and Announcements Controller
  */
 const db = require('../config/db');
+const { notifyUser, notifyAllUsers, notifyGroupMembers } = require('../services/notifyService');
 
 /**
  * Create a new post in a group
@@ -50,6 +51,16 @@ async function createPost(req, res, next) {
         );
 
         const newPostId = result.insertId;
+
+        // Notify all group members about the new post
+        await notifyGroupMembers(
+            groupId,
+            `New ${type === 'ANNOUNCEMENT' ? 'Announcement' : 'Post'} in ${group.name}`,
+            `${req.user.full_name || 'A member'} posted: "${title.trim()}". Join the conversation!`,
+            'POST',
+            `/groups/${groupId}`,
+            userId
+        );
 
         return res.status(201).json({
             success: true,
