@@ -523,3 +523,69 @@ a:hover {
     font-size: 0.95rem;
   }
 }
+
+/* ==========================================================================
+   NOTIFICATION SYSTEM STYLES & ANIMATIONS
+   ========================================================================== */
+.notification-bell-btn {
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease;
+}
+
+.notification-bell-btn:hover {
+  background-color: rgba(11, 59, 96, 0.08) !important;
+  transform: scale(1.06);
+}
+
+.notification-bell-btn:active {
+  transform: scale(0.95);
+}
+
+.notification-bell-btn.ringing {
+  animation: bellRing 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+  transform-origin: top center;
+  color: var(--ucu-primary) !important;
+}
+
+@keyframes bellRing {
+  0% { transform: rotate(0); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-14deg); }
+  45% { transform: rotate(10deg); }
+  60% { transform: rotate(-10deg); }
+  75% { transform: rotate(4deg); }
+  85% { transform: rotate(-4deg); }
+  100% { transform: rotate(0); }
+}
+
+.notification-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border-radius: 9999px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.35);
+  animation: pulseBadge 2.2s infinite ease-in-out;
+  line-height: 1;
+}
+
+@keyframes pulseBadge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
