@@ -5,6 +5,7 @@
 const db = require('../config/db');
 const { generateToken } = require('../config/jwt');
 const { hashPassword, comparePassword } = require('../services/passwordService');
+const { notifyUser, notifyAdmins } = require('../services/notifyService');
 
 /**
  * Register a new student account
@@ -99,6 +100,14 @@ async function register(req, res, next) {
             `INSERT INTO notifications (user_id, title, message, type, is_read, link)
              VALUES (?, 'Welcome to Student Study Group Finder', 'Your UCU student account has been created. Start exploring academic groups today!', 'SYSTEM', 0, '/explore')`,
             [newUserId]
+        );
+
+        // Notify Administrators of new student registration
+        await notifyAdmins(
+            'New Student Registration',
+            `${safeTrim(full_name)} (${safeTrim(programme)}) has registered on the platform.`,
+            'ADMIN',
+            '/admin'
         );
 
         const token = generateToken({ id: newUserId, email: email.toLowerCase().trim(), role: 'STUDENT' });
