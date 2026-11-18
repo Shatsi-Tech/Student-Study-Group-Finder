@@ -341,12 +341,6 @@ async function joinGroup(req, res, next) {
             return res.status(400).json({ success: false, message: 'You have already joined this study group.' });
         }
 
-        // Check capacity
-        const [members] = await db.query('SELECT id FROM group_members WHERE group_id = ? AND status = "APPROVED"', [groupId]);
-        if (members.length >= group.max_members) {
-            return res.status(400).json({ success: false, message: 'This study group has reached its maximum member capacity.' });
-        }
-
         await db.query(
             'INSERT INTO group_members (group_id, user_id, member_role, status) VALUES (?, ?, "MEMBER", "APPROVED")',
             [groupId, userId]
