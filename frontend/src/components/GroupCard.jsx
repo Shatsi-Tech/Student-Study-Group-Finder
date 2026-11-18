@@ -92,7 +92,7 @@ export default function GroupCard({ group, onJoin, isJoining }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Users size={14} color="#e09f3e" />
-            <span>{group.member_count || 1} / {group.max_members || 15} Members</span>
+            <span>{group.member_count || 1} {group.member_count === 1 ? 'Member' : 'Members'}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <MapPin size={14} color="#0284c7" />
