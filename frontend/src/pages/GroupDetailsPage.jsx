@@ -286,7 +286,7 @@ export default function GroupDetailsPage() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Users size={16} color="#e09f3e" />
-            <span>{members.length} / {group.max_members} Registered Members</span>
+            <span>{members.length} {members.length === 1 ? 'Registered Member' : 'Registered Members'}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <MapPin size={16} color="#0284c7" />
