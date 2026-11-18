@@ -25,8 +25,7 @@ export default function CreateGroupPage() {
     faculty: UCU_FACULTIES[0],
     description: '',
     meeting_location: '',
-    meeting_type: 'Physical',
-    max_members: 15
+    meeting_type: 'Physical'
   });
 
   const [loading, setLoading] = useState(false);
@@ -158,35 +157,19 @@ export default function CreateGroupPage() {
             {errors.description && <span style={{ color: '#ef4444', fontSize: '0.75rem' }}>{errors.description}</span>}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-            {/* Meeting Type */}
-            <div className="form-group">
-              <label className="form-label">Meeting Format *</label>
-              <select
-                name="meeting_type"
-                value={formData.meeting_type}
-                onChange={handleChange}
-                className="form-control"
-              >
-                <option value="Physical">Physical (On-Campus)</option>
-                <option value="Online">Online (Google Meet / Zoom)</option>
-                <option value="Hybrid">Hybrid (Physical & Online)</option>
-              </select>
-            </div>
-
-            {/* Max Members */}
-            <div className="form-group">
-              <label className="form-label">Maximum Member Capacity</label>
-              <input
-                type="number"
-                name="max_members"
-                min="3"
-                max="50"
-                value={formData.max_members}
-                onChange={handleChange}
-                className="form-control"
-              />
-            </div>
+          {/* Meeting Format */}
+          <div className="form-group">
+            <label className="form-label">Meeting Format *</label>
+            <select
+              name="meeting_type"
+              value={formData.meeting_type}
+              onChange={handleChange}
+              className="form-control"
+            >
+              <option value="Physical">Physical (On-Campus)</option>
+              <option value="Online">Online (Google Meet / Zoom)</option>
+              <option value="Hybrid">Hybrid (Physical & Online)</option>
+            </select>
           </div>
 
           {/* Meeting Location */}
